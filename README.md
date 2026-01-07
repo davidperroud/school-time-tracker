@@ -28,8 +28,8 @@ Une application web moderne pour suivre et analyser votre temps d'étude. Dével
 
 1. **Clonez le repository :**
    ```bash
-   git clone https://github.com/votre-nom-utilisateur/study-tracker-claude.git
-   cd study-tracker-claude
+   git clone https://github.com/votre-nom-utilisateur/school-time-tracker.git
+   cd school-time-tracker
    ```
 
 2. **Installez les dépendances :**
@@ -127,7 +127,7 @@ L'application propose 5 onglets principaux :
 ## 🛠️ Architecture technique
 
 ```
-study-tracker-claude/
+school-time-tracker/
 ├── .gitignore                # Fichiers à ignorer par Git
 ├── auth.php                  # Authentification HTTP Basic
 ├── composer.json             # Dépendances PHP
@@ -269,7 +269,7 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 Si vous rencontrez un problème ou avez une suggestion :
 
-1. Vérifiez les [issues existantes](https://github.com/votre-nom-utilisateur/study-tracker-claude/issues)
+1. Vérifiez les [issues existantes](https://github.com/davidperroud/school-time-tracker/issues)
 2. Créez une nouvelle issue avec :
    - Description détaillée du problème
    - Étapes pour reproduire
