@@ -4,6 +4,7 @@ Une application web moderne pour suivre et analyser votre temps d'étude. Dével
 
 ## ✨ Fonctionnalités
 
+- 🌍 **Support multilingue complet** avec 4 langues (Français, Anglais, Allemand, Italien)
 - 📊 **Dashboard interactif** avec statistiques en temps réel et graphiques
 - 📝 **Suivi du temps** par sujet et catégorie
 - 📈 **Rapports détaillés** (journalier, hebdomadaire, mensuel)
@@ -232,6 +233,51 @@ tailwind.config = {
 - **Graphiques :** Chart.js
 - **Authentification :** HTTP Basic Auth
 - **Export PDF :** TCPDF
+
+## 🌍 Support multilingue
+
+L'application prend désormais en charge **4 langues** : Français, Anglais, Allemand et Italien.
+
+### Fonctionnalités multilingues
+
+- **Détection automatique de la langue** basée sur les préférences du navigateur
+- **Sélecteur de langue** dans l'interface utilisateur avec sauvegarde des préférences
+- **Traduction complète** de tous les éléments d'interface (boutons, formulaires, messages, etc.)
+- **Export PDF multilingue** avec rapports dans la langue sélectionnée
+- **Support des caractères spéciaux** pour toutes les langues
+- **Traduction des catégories et sujets** via la base de données
+
+### Comment changer de langue
+
+1. **Méthode recommandée** : Utilisez le menu déroulant de sélection de langue dans l'en-tête
+2. **Paramètre URL** : Ajoutez `?lang=en`, `?lang=de` ou `?lang=it` à l'URL
+3. **Détection automatique** : L'application détecte automatiquement la langue de votre navigateur
+
+### Langues supportées
+
+| Code | Langue | Nom natif | Statut |
+|------|--------|-----------|--------|
+| `fr` | Français | Français | ✓ Par défaut |
+| `en` | Anglais | English | ✓ Complète |
+| `de` | Allemand | Deutsch | ✓ Complète |
+| `it` | Italien | Italiano | ✓ Complète |
+
+### Structure des fichiers de traduction
+
+```
+lang/
+├── fr.json          # 90 chaînes de traduction en français
+├── en.json          # 90 chaînes de traduction en anglais
+├── de.json          # 90 chaînes de traduction en allemand
+└── it.json          # 90 chaînes de traduction en italien
+```
+
+### Utilisation avancée
+
+Pour les développeurs, la classe `Translation` fournit des méthodes pour :
+- `t('ui.buttons.save')` - Traduction de chaînes
+- `getLang()` - Récupération de la langue actuelle
+- `getAvailableLanguages()` - Liste des langues disponibles
 
 ## 📊 Fonctionnalités avancées
 
