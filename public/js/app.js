@@ -1,3 +1,88 @@
+// --- Translation Infrastructure ---
+let translations = {};
+let currentLang = localStorage.getItem('lang') || document.documentElement.lang || 'fr';
+
+async function loadTranslations(lang) {
+    const response = await fetch(`translations.php?lang=${lang}`);
+    translations = await response.json();
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+}
+
+function t(key) {
+    const keys = key.split('.');
+    let value = translations;
+    for (const k of keys) {
+        if (value[k] !== undefined) {
+            value = value[k];
+        } else {
+            return key;
+        }
+    }
+    return value;
+}
+
+// Global flag to track if translations are loaded
+let translationsLoaded = false;
+
+// On page load, load translations and then initialize everything
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadTranslations(currentLang);
+    translationsLoaded = true;
+    applyTranslations();
+    initializeApp();
+});
+
+function applyTranslations() {
+    // Translate tab buttons
+    document.querySelectorAll('.tab[data-tab]').forEach(tab => {
+        const tabKey = tab.dataset.tab;
+        if (tabKey === 'admin') {
+            tab.textContent = 'Admin';
+        } else {
+            tab.textContent = t(`ui.navigation.${tabKey}`);
+        }
+    });
+    // Translate other static elements as needed
+    console.log('Translations applied:', translations);
+}
+
+async function initializeApp() {
+    loadDashboard();
+    loadRecentEntries();
+    loadManagementLists();
+
+    // Appliquer le thème sombre si déjà activé
+    if(localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+        const themeToggle = document.getElementById('themeToggle');
+        if(themeToggle) themeToggle.textContent = '☀️';
+    }
+
+    // Sauvegarder le choix du thème
+    const themeToggle = document.getElementById('themeToggle');
+    if(themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            if(document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                themeToggle.textContent = '☀️';
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeToggle.textContent = '🌙';
+            }
+        });
+    }
+}
+
+// Fonction pour changer la langue
+function changeLanguage(lang) {
+    // Mettre à jour localStorage avec la nouvelle langue
+    localStorage.setItem('lang', lang);
+
+    // Soumettre le formulaire pour changer la langue côté serveur
+    document.getElementById('langForm').submit();
+}
 // Gestion des formulaires AJAX
 document.addEventListener('DOMContentLoaded', () => {
     // Formulaire d'ajout d'entrée
@@ -81,6 +166,7 @@ document.querySelectorAll('.tab').forEach(tab => {
         if (tab.dataset.tab === 'entry') loadRecentEntries();
         if (tab.dataset.tab === 'entries') loadAllEntries();
         if (tab.dataset.tab === 'manage') loadManagementLists();
+        if (tab.dataset.tab === 'admin') loadUserList();
         if (tab.dataset.tab === 'reports') {
             initReportControls();
             loadReport();
@@ -164,34 +250,7 @@ function adjustDateForPeriod() {
     }
 }
 
-// Charger le dashboard au démarrage
-window.addEventListener('DOMContentLoaded', () => {
-    loadDashboard();
-    loadRecentEntries();
-    loadManagementLists();
-    
-    // Appliquer le thème sombre si déjà activé
-    if(localStorage.getItem('theme') === 'dark') {
-        document.documentElement.classList.add('dark');
-        const themeToggle = document.getElementById('themeToggle');
-        if(themeToggle) themeToggle.textContent = '☀️ Thème clair';
-    }
-    
-    // Sauvegarder le choix du thème
-    const themeToggle = document.getElementById('themeToggle');
-    if(themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-            if(document.documentElement.classList.contains('dark')) {
-                localStorage.setItem('theme', 'dark');
-                themeToggle.textContent = '☀️ Thème clair';
-            } else {
-                localStorage.setItem('theme', 'light');
-                themeToggle.textContent = '🌙 Thème sombre';
-            }
-        });
-    }
-});
+
 
 // Dashboard
 async function loadDashboard() {
@@ -216,15 +275,15 @@ function displayStats(data) {
     
     grid.innerHTML = `
         <div class="stat-card">
-            <div class="stat-label">Total aujourd'hui</div>
+            <div class="stat-label">${t('ui.buttons.all')} ${t('ui.reports.day').toLowerCase()}</div>
             <div class="stat-value">${hours}h ${minutes}m</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Catégories actives</div>
+            <div class="stat-label">${t('ui.forms.category')}s ${t('ui.charts.category_today').toLowerCase()}</div>
             <div class="stat-value">${data.summary.filter(s => s.total_minutes > 0).length}</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Sessions</div>
+            <div class="stat-label">${t('ui.tables.sessions')}</div>
             <div class="stat-value">${data.summary.reduce((sum, s) => sum + s.entries_count, 0)}</div>
         </div>
     `;
@@ -265,7 +324,7 @@ function displayCategoryChart(summary) {
                 },
                 title: {
                     display: true,
-                    text: 'Répartition par catégorie (aujourd\'hui)',
+                    text: t('ui.charts.category_today'),
                     color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#222',
                     font: { size: 16 }
                 },
@@ -313,7 +372,7 @@ function displayProgressChart(summary) {
         data: {
             labels: summary.map(s => s.category),
             datasets: [{
-                label: 'Minutes cette semaine',
+                label: t('ui.charts.minutes'),
                 data: summary.map(s => s.total_minutes),
                 backgroundColor: summary.map(s => s.color),
                 borderWidth: 0
@@ -325,7 +384,7 @@ function displayProgressChart(summary) {
                 legend: { display: false },
                 title: {
                     display: true,
-                    text: 'Temps par catégorie (7 derniers jours)',
+                    text: t('ui.charts.category_week'),
                     color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#222',
                     font: { size: 16 }
                 }
@@ -364,7 +423,7 @@ function displayRecentEntries(entries) {
     const container = document.getElementById('recentEntries');
     
     if (entries.length === 0) {
-        container.innerHTML = '<p class="empty-state">Aucune entrée aujourd\'hui</p>';
+        container.innerHTML = `<p class="empty-state">${t('ui.messages.no_entry_today')}</p>`;
         return;
     }
     
@@ -390,16 +449,19 @@ function displayRecentEntries(entries) {
 // Gestion
 async function loadManagementLists() {
     try {
-        const [catResponse, subResponse] = await Promise.all([
+        const [catResponse, subResponse, userResponse] = await Promise.all([
             fetch('api.php?action=categories'),
-            fetch('api.php?action=subjects')
+            fetch('api.php?action=subjects'),
+            fetch('api.php?action=users')
         ]);
-        
+
         const catResult = await catResponse.json();
         const subResult = await subResponse.json();
-        
+        const userResult = await userResponse.json();
+
         if (catResult.success) displayCategories(catResult.data);
         if (subResult.success) displaySubjects(subResult.data);
+        if (userResult.success) displayUsers(userResult.data);
     } catch (error) {
         console.error('Erreur:', error);
     }
@@ -409,7 +471,7 @@ function displayCategories(categories) {
     const container = document.getElementById('categoriesList');
 
     if (categories.length === 0) {
-        container.innerHTML = '<p class="empty-state">Aucune catégorie</p>';
+        container.innerHTML = `<p class="empty-state">${t('ui.messages.no_category')}</p>`;
         return;
     }
 
@@ -425,7 +487,7 @@ function displayCategories(categories) {
                 <form method="POST" style="display: inline;">
                     <input type="hidden" name="action" value="delete_category">
                     <input type="hidden" name="id" value="${cat.id}">
-                    <button type="submit" class="btn-delete" onclick="return confirm('Supprimer cette catégorie et tous ses sujets?')" title="Supprimer">🗑️</button>
+                    <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_category'))" title="${t('ui.buttons.cancel')}">🗑️</button>
                 </form>
             </div>
         </div>
@@ -436,7 +498,7 @@ function displaySubjects(subjects) {
     const container = document.getElementById('subjectsList');
 
     if (subjects.length === 0) {
-        container.innerHTML = '<p class="empty-state">Aucun sujet</p>';
+        container.innerHTML = `<p class="empty-state">${t('ui.messages.no_subject')}</p>`;
         return;
     }
 
@@ -452,7 +514,7 @@ function displaySubjects(subjects) {
                 <form method="POST" style="display: inline;">
                     <input type="hidden" name="action" value="delete_subject">
                     <input type="hidden" name="id" value="${sub.id}">
-                    <button type="submit" class="btn-delete" onclick="return confirm('Supprimer ce sujet?')" title="Supprimer">🗑️</button>
+                    <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_subject'))" title="${t('ui.buttons.cancel')}">🗑️</button>
                 </form>
             </div>
         </div>
@@ -494,13 +556,13 @@ function displayReport(data) {
 
     let html = `
         <div class="report-header">
-            <h2>Rapport - ${getPeriodLabel(data.period, data.date)}</h2>
-            <div class="report-total">Total: ${totalHours}h ${totalMins}m</div>
+            <h2>${t('ui.navigation.reports')} - ${getPeriodLabel(data.period, data.date)}</h2>
+            <div class="report-total">${t('pdf.total')} ${totalHours}h ${totalMins}m</div>
         </div>
     `;
 
     if (data.summary.length === 0 || data.total_minutes === 0) {
-        html += '<p class="empty-state">Aucune donnée pour cette période</p>';
+        html += `<p class="empty-state">${t('ui.messages.no_data_period')}</p>`;
         container.innerHTML = html;
         // Masquer le bouton d'export
         if (exportBtn) exportBtn.style.display = 'none';
@@ -514,11 +576,11 @@ function displayReport(data) {
         <table class="report-table">
             <thead>
                 <tr>
-                    <th>Catégorie</th>
-                    <th>Sujets</th>
-                    <th>Sessions</th>
-                    <th>Durée</th>
-                    <th>%</th>
+                    <th>${t('ui.tables.category')}</th>
+                    <th>${t('ui.tables.subjects')}</th>
+                    <th>${t('ui.tables.sessions')}</th>
+                    <th>${t('ui.tables.duration')}</th>
+                    <th>${t('ui.tables.percent')}</th>
                 </tr>
             </thead>
             <tbody>
@@ -630,7 +692,7 @@ function displayAllEntries(entries) {
     const container = document.getElementById('allEntriesList');
 
     if (entries.length === 0) {
-        container.innerHTML = '<p class="empty-state">Aucune entrée trouvée</p>';
+        container.innerHTML = `<p class="empty-state">${t('ui.messages.no_entry_today')}</p>`;
         return;
     }
 
@@ -812,4 +874,95 @@ document.addEventListener('DOMContentLoaded', () => {
     if (entriesSearch) {
         entriesSearch.addEventListener('input', filterAndDisplayEntries);
     }
+
+    // Formulaire d'ajout d'utilisateur
+    const userForm = document.querySelector('.user-form');
+    if (userForm) {
+        userForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(userForm);
+            try {
+                const response = await fetch('index.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    userForm.reset();
+                    loadUserList();
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        });
+    }
+
+    // Gestionnaire pour le formulaire d'édition d'utilisateur
+    const editUserForm = document.querySelector('.edit-user-form');
+    if (editUserForm) {
+        editUserForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(editUserForm);
+            try {
+                const response = await fetch('index.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    document.getElementById('editUserModal').style.display = 'none';
+                    loadUserList();
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        });
+    }
 });
+
+// Gestion des utilisateurs (admin uniquement)
+async function loadUserList() {
+    try {
+        const response = await fetch('api.php?action=users');
+        const result = await response.json();
+
+        if (result.success) {
+            displayUsers(result.data);
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+    }
+}
+
+function displayUsers(users) {
+    const container = document.getElementById('usersList');
+
+    if (users.length === 0) {
+        container.innerHTML = `<p class="empty-state">${t('ui.messages.no_category')}</p>`;
+        return;
+    }
+
+    container.innerHTML = users.map(user => `
+        <div class="list-item">
+            <div class="list-item-content">
+                <strong>${user.username}</strong>
+                <small>${user.language_preference} ${user.is_admin ? '(Admin)' : ''}</small>
+            </div>
+            <div class="list-item-actions">
+                <button class="btn-edit" onclick="editUser(${user.id}, '${user.username.replace(/'/g, "\\'")}', '${user.language_preference}', ${user.is_admin})" title="Modifier">✏️</button>
+                <form method="POST" style="display: inline;">
+                    <input type="hidden" name="action" value="delete_user">
+                    <input type="hidden" name="id" value="${user.id}">
+                    <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_user'))" title="Supprimer">🗑️</button>
+                </form>
+            </div>
+        </div>
+    `).join('');
+}
+
+function editUser(id, username, language, isAdmin) {
+    document.getElementById('editUserId').value = id;
+    document.getElementById('editUserUsername').value = username;
+    document.getElementById('editUserLanguage').value = language;
+    document.getElementById('editUserIsAdmin').checked = isAdmin == 1;
+    document.getElementById('editUserModal').style.display = 'block';
+}
+

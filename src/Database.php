@@ -65,4 +65,39 @@ class Database {
     public function lastInsertId() {
         return $this->pdo->lastInsertId();
     }
+
+    public function getCategoriesWithTranslations($lang = 'fr') {
+        $sql = "SELECT c.*,
+                       COALESCE(ct.name, c.name) as translated_name,
+                       COUNT(DISTINCT s.id) as subjects_count,
+                       COALESCE(SUM(te.duration_minutes), 0) as total_minutes
+                FROM categories c
+                LEFT JOIN category_translations ct ON c.id = ct.category_id AND ct.lang = ?
+                LEFT JOIN subjects s ON c.id = s.category_id
+                LEFT JOIN time_entries te ON s.id = te.subject_id
+                GROUP BY c.id
+                ORDER BY c.name";
+        return $this->fetchAll($sql, [$lang]);
+    }
+
+    public function getSubjectsWithTranslations($lang = 'fr', $categoryId = null) {
+        $sql = "SELECT s.*, c.name as category_name, c.color,
+                       COALESCE(st.name, s.name) as translated_name,
+                       COALESCE(st.description, s.description) as translated_description,
+                       COALESCE(SUM(te.duration_minutes), 0) as total_minutes,
+                       COUNT(te.id) as entries_count
+                FROM subjects s
+                JOIN categories c ON s.category_id = c.id
+                LEFT JOIN subject_translations st ON s.id = st.subject_id AND st.lang = ?
+                LEFT JOIN time_entries te ON s.id = te.subject_id";
+
+        $params = [$lang];
+        if ($categoryId) {
+            $sql .= " WHERE s.category_id = ?";
+            $params[] = $categoryId;
+        }
+
+        $sql .= " GROUP BY s.id ORDER BY s.name";
+        return $this->fetchAll($sql, $params);
+    }
 }

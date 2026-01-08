@@ -1,0 +1,138 @@
+{
+  "ui": {
+    "header": {
+      "title": "Studienzeit-Tracker",
+      "date": "Datum: "
+    },
+    "navigation": {
+      "dashboard": "Dashboard",
+      "new_entry": "Neue Eingabe",
+      "entry": "Neue Eingabe",
+      "entries": "Einträge",
+      "manage": "Verwalten",
+      "reports": "Berichte"
+    },
+    "forms": {
+      "subject": "Fach",
+      "duration": "Dauer (Minuten)",
+      "date": "Datum",
+      "notes": "Notizen (optional)",
+      "name": "Name",
+      "color": "Farbe",
+      "category": "Kategorie",
+      "subject_name": "Fachname",
+      "description": "Beschreibung"
+    },
+    "buttons": {
+      "save": "Speichern",
+      "add": "Hinzufügen",
+      "cancel": "Abbrechen",
+      "edit": "Bearbeiten",
+      "generate": "Generieren",
+      "export_pdf": "📄 PDF exportieren",
+      "all": "Alle"
+    },
+    "placeholders": {
+      "select_subject": "Fach auswählen...",
+      "name": "Name",
+      "category": "Kategorie...",
+      "subject_name": "Fachname"
+    },
+    "tables": {
+      "category": "Kategorie",
+      "subjects": "Fächer",
+      "sessions": "Sitzungen",
+      "duration": "Dauer",
+      "percent": "%"
+    },
+    "modals": {
+      "edit_category": "Kategorie bearbeiten",
+      "edit_subject": "Fach bearbeiten",
+      "edit_entry": "Eintrag bearbeiten"
+    },
+    "messages": {
+      "no_entry_today": "Heute keine Einträge",
+      "no_category": "Keine Kategorie",
+      "no_subject": "Kein Fach",
+      "no_data_period": "Keine Daten für diesen Zeitraum",
+      "delete": "Löschen?",
+      "delete_category": "Diese Kategorie und alle ihre Fächer löschen?",
+      "delete_subject": "Dieses Fach löschen?",
+      "delete_entry": "Diesen Eintrag löschen?",
+      "error": "Fehler:",
+      "success": "Erfolg"
+    },
+    "charts": {
+      "category_today": "Kategorieverteilung (heute)",
+      "category_week": "Zeit nach Kategorie (letzte 7 Tage)",
+      "minutes": "Minuten"
+    },
+    "reports": {
+      "day": "Tag",
+      "week": "Woche",
+      "month": "Monat",
+      "start_date": "Startdatum:",
+      "month_label": "Monat:",
+      "year": "Jahr:",
+      "day_of": "Tag von",
+      "week_of": "Woche von ... bis ...",
+      "month_of": "Monat von ..."
+    },
+    "date": {
+      "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+    },
+    "search": {
+      "placeholder": "Fach, Kategorie oder Notizen..."
+    },
+    "auth": {
+      "username": "Benutzername",
+      "password": "Passwort",
+      "confirm_password": "Passwort bestätigen",
+      "preferred_language": "Bevorzugte Sprache",
+      "login": "Anmelden",
+      "register": "Registrieren",
+      "login_tab": "Anmeldung",
+      "register_tab": "Registrierung",
+      "logout": "Abmelden",
+      "logged_in_as": "Angemeldet als",
+      "back_to_home": "Zurück zur Startseite",
+      "dark_theme": "Dunkles Thema",
+      "recent_entries": "Kürzliche Einträge",
+      "enter_credentials": "Bitte geben Sie einen Benutzernamen und ein Passwort ein.",
+      "passwords_no_match": "Passwörter stimmen nicht überein.",
+      "password_min_length": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+      "username_exists": "Dieser Benutzername existiert bereits.",
+      "account_created": "Konto erfolgreich erstellt. Sie können sich jetzt anmelden.",
+      "account_creation_error": "Fehler beim Erstellen des Kontos.",
+      "invalid_credentials": "Falscher Benutzername oder Passwort."
+    },
+    "manage": {
+      "users": "Benutzer"
+    }
+  },
+  "pdf": {
+    "title": "Studienbericht",
+    "generated_on": "Erstellt am",
+    "auto_generated": "Bericht automatisch erstellt vom Studienzeit-Tracker",
+    "total": "Gesamt:",
+    "category": "Kategorie",
+    "subjects": "Fächer",
+    "sessions": "Sitzungen",
+    "duration": "Dauer",
+    "percent": "%",
+    "no_data": "Keine Daten für diesen Zeitraum"
+  },
+  "categories": {
+    "mathematics": "Mathematik",
+    "science": "Naturwissenschaften",
+    "languages": "Sprachen",
+    "programming": "Programmierung"
+  },
+  "subjects": {
+    "algebra": "Algebra",
+    "geometry": "Geometrie",
+    "physics": "Physik",
+    "english": "Englisch",
+    "python": "Python"
+  }
+}

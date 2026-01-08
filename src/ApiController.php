@@ -1,13 +1,16 @@
 <?php
 
 require_once __DIR__ . '/Database.php';
+require_once __DIR__ . '/Translation.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 class ApiController {
     private $db;
+    private $translation;
 
     public function __construct() {
         $this->db = Database::getInstance();
+        $this->translation = new Translation();
     }
 
     public function handleRequest() {
@@ -27,10 +30,12 @@ class ApiController {
                 return $this->getEntries();
             case 'all_entries':
                 return $this->getAllEntries();
+            case 'users':
+                return $this->getUsers();
             case 'stats':
                 return $this->getStats();
             default:
-                return $this->error('Action non reconnue');
+                return $this->error($this->translation->t('ui.messages.error'));
         }
     }
 
@@ -146,12 +151,20 @@ class ApiController {
         return $this->success($this->db->fetchAll($sql, $params));
     }
 
+    private function getUsers() {
+        $sql = "SELECT id, username, language_preference, is_admin, created_at, last_login
+                FROM users
+                ORDER BY username";
+
+        return $this->success($this->db->fetchAll($sql));
+    }
+
     private function getStats() {
         $subjectId = $_GET['subject_id'] ?? null;
         $days = $_GET['days'] ?? 30;
 
         if (!$subjectId) {
-            return $this->error('subject_id requis');
+            return $this->error($this->translation->t('ui.messages.error'));
         }
 
         $sql = "SELECT
@@ -208,7 +221,7 @@ class ApiController {
         // Configuration du PDF
         $pdf->SetCreator('Study Time Tracker');
         $pdf->SetAuthor('Study Time Tracker');
-        $pdf->SetTitle('Rapport d\'étude');
+        $pdf->SetTitle($this->translation->t('pdf.title'));
         $pdf->SetSubject('Rapport de temps d\'étude');
 
         // Supprimer les en-têtes et pieds de page par défaut
@@ -224,7 +237,7 @@ class ApiController {
 
         // Titre
         $pdf->SetFont('helvetica', 'B', 20);
-        $pdf->Cell(0, 15, 'Rapport d\'étude', 0, 1, 'C');
+        $pdf->Cell(0, 15, $this->translation->t('pdf.title'), 0, 1, 'C');
         $pdf->Ln(5);
 
         // Période
@@ -235,7 +248,7 @@ class ApiController {
 
         // Date de génération
         $pdf->SetFont('helvetica', 'I', 10);
-        $pdf->Cell(0, 8, 'Généré le ' . date('d/m/Y à H:i'), 0, 1, 'R');
+        $pdf->Cell(0, 8, $this->translation->t('pdf.generated_on') . ' ' . date('d/m/Y à H:i'), 0, 1, 'R');
         $pdf->Ln(10);
 
         // Total général
@@ -243,7 +256,7 @@ class ApiController {
             $hours = floor($total / 60);
             $minutes = $total % 60;
             $pdf->SetFont('helvetica', 'B', 14);
-            $pdf->Cell(0, 12, 'Total: ' . $hours . 'h ' . $minutes . 'm', 0, 1, 'C');
+            $pdf->Cell(0, 12, $this->translation->t('pdf.total') . ' ' . $hours . 'h ' . $minutes . 'm', 0, 1, 'C');
             $pdf->Ln(10);
         }
 
@@ -257,11 +270,11 @@ class ApiController {
             $colWidths = [80, 25, 25, 30, 25]; // Catégorie, Sujets, Sessions, Durée, %
 
             // En-têtes
-            $pdf->Cell($colWidths[0], 10, 'Catégorie', 1, 0, 'L', true);
-            $pdf->Cell($colWidths[1], 10, 'Sujets', 1, 0, 'C', true);
-            $pdf->Cell($colWidths[2], 10, 'Sessions', 1, 0, 'C', true);
-            $pdf->Cell($colWidths[3], 10, 'Durée', 1, 0, 'C', true);
-            $pdf->Cell($colWidths[4], 10, '%', 1, 1, 'C', true);
+            $pdf->Cell($colWidths[0], 10, $this->translation->t('pdf.category'), 1, 0, 'L', true);
+            $pdf->Cell($colWidths[1], 10, $this->translation->t('pdf.subjects'), 1, 0, 'C', true);
+            $pdf->Cell($colWidths[2], 10, $this->translation->t('pdf.sessions'), 1, 0, 'C', true);
+            $pdf->Cell($colWidths[3], 10, $this->translation->t('pdf.duration'), 1, 0, 'C', true);
+            $pdf->Cell($colWidths[4], 10, $this->translation->t('pdf.percent'), 1, 1, 'C', true);
 
             // Données
             $pdf->SetFont('helvetica', '', 10);
@@ -284,13 +297,13 @@ class ApiController {
             }
         } else {
             $pdf->SetFont('helvetica', 'I', 12);
-            $pdf->Cell(0, 15, 'Aucune donnée pour cette période', 0, 1, 'C');
+            $pdf->Cell(0, 15, $this->translation->t('pdf.no_data'), 0, 1, 'C');
         }
 
         // Pied de page
         $pdf->Ln(20);
         $pdf->SetFont('helvetica', 'I', 8);
-        $pdf->Cell(0, 5, 'Rapport généré automatiquement par Study Time Tracker', 0, 1, 'C');
+        $pdf->Cell(0, 5, $this->translation->t('pdf.auto_generated'), 0, 1, 'C');
 
         // Sortie du PDF
         $filename = 'rapport_' . $period . '_' . date('Y-m-d_H-i-s') . '.pdf';

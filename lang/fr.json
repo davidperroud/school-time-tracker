@@ -1,0 +1,161 @@
+{
+  "ui": {
+    "header": {
+      "title": "Study Time Tracker",
+      "date": "Date : "
+    },
+    "navigation": {
+      "dashboard": "Dashboard",
+      "new_entry": "Nouvelle entrée",
+      "entry": "Nouvelle entrée",
+      "entries": "Entrées",
+      "manage": "Gestion",
+      "reports": "Rapports"
+    },
+    "forms": {
+      "subject": "Sujet",
+      "duration": "Durée (minutes)",
+      "date": "Date",
+      "notes": "Notes (optionnel)",
+      "name": "Nom",
+      "color": "Couleur",
+      "category": "Catégorie",
+      "subject_name": "Nom du sujet",
+      "description": "Description"
+    },
+    "buttons": {
+      "save": "Enregistrer",
+      "add": "Ajouter",
+      "cancel": "Annuler",
+      "edit": "Modifier",
+      "generate": "Générer",
+      "export_pdf": "📄 Exporter PDF",
+      "all": "Tous"
+    },
+    "placeholders": {
+      "select_subject": "Sélectionner un sujet...",
+      "name": "Nom",
+      "category": "Catégorie...",
+      "subject_name": "Nom du sujet"
+    },
+    "tables": {
+      "category": "Catégorie",
+      "subjects": "Sujets",
+      "sessions": "Sessions",
+      "duration": "Durée",
+      "percent": "%"
+    },
+    "modals": {
+      "edit_category": "Modifier la catégorie",
+      "edit_subject": "Modifier le sujet",
+      "edit_entry": "Modifier l'entrée"
+    },
+    "messages": {
+      "no_entry_today": "Aucune entrée aujourd'hui",
+      "no_category": "Aucune catégorie",
+      "no_subject": "Aucun sujet",
+      "no_data_period": "Aucune donnée pour cette période",
+      "delete": "Supprimer?",
+      "delete_category": "Supprimer cette catégorie et tous ses sujets?",
+      "delete_subject": "Supprimer ce sujet?",
+      "delete_entry": "Supprimer cette entrée?",
+      "error": "Erreur:",
+      "success": "Succès"
+    },
+    "charts": {
+      "category_today": "Répartition par catégorie (aujourd'hui)",
+      "category_week": "Temps par catégorie (7 derniers jours)",
+      "minutes": "minutes"
+    },
+    "reports": {
+      "day": "Jour",
+      "week": "Semaine",
+      "month": "Mois",
+      "start_date": "Date de début:",
+      "month_label": "Mois:",
+      "year": "Année:",
+      "day_of": "Jour du",
+      "week_of": "Semaine du ... au ...",
+      "month_of": "Mois de ..."
+    },
+    "date": {
+      "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+    },
+    "search": {
+      "placeholder": "Sujet, catégorie ou notes..."
+    },
+    "auth": {
+      "username": "Nom d'utilisateur",
+      "password": "Mot de passe",
+      "confirm_password": "Confirmer le mot de passe",
+      "preferred_language": "Langue préférée",
+      "login": "Se connecter",
+      "register": "S'inscrire",
+      "login_tab": "Connexion",
+      "register_tab": "Inscription",
+      "logout": "Déconnexion",
+      "logged_in_as": "Connecté en tant que",
+      "back_to_home": "Retour à l'accueil",
+      "dark_theme": "Thème sombre",
+      "recent_entries": "Entrées récentes",
+      "enter_credentials": "Veuillez saisir un nom d'utilisateur et un mot de passe.",
+      "passwords_no_match": "Les mots de passe ne correspondent pas.",
+      "password_min_length": "Le mot de passe doit contenir au moins 6 caractères.",
+      "username_exists": "Ce nom d'utilisateur existe déjà.",
+      "account_created": "Compte créé avec succès. Vous pouvez maintenant vous connecter.",
+      "account_creation_error": "Erreur lors de la création du compte.",
+      "invalid_credentials": "Nom d'utilisateur ou mot de passe incorrect.",
+      "setup_admin": "Configuration administrateur",
+      "setup_description": "Bienvenue ! Pour commencer, créez le compte administrateur principal.",
+      "create_admin": "Créer l'administrateur"
+    },
+    "manage": {
+      "users": "Utilisateurs",
+      "admin": "Administrateur"
+    },
+    "modals": {
+      "edit_category": "Modifier la catégorie",
+      "edit_subject": "Modifier le sujet",
+      "edit_entry": "Modifier l'entrée",
+      "edit_user": "Modifier l'utilisateur"
+    },
+    "messages": {
+      "no_entry_today": "Aucune entrée aujourd'hui",
+      "no_category": "Aucune catégorie",
+      "no_subject": "Aucun sujet",
+      "no_data_period": "Aucune donnée pour cette période",
+      "delete": "Supprimer?",
+      "delete_category": "Supprimer cette catégorie et tous ses sujets?",
+      "delete_subject": "Supprimer ce sujet?",
+      "delete_entry": "Supprimer cette entrée?",
+      "delete_user": "Supprimer cet utilisateur?",
+      "error": "Erreur:",
+      "success": "Succès"
+    }
+  },
+  "pdf": {
+    "title": "Rapport d'étude",
+    "generated_on": "Généré le",
+    "auto_generated": "Rapport généré automatiquement par Study Time Tracker",
+    "total": "Total:",
+    "category": "Catégorie",
+    "subjects": "Sujets",
+    "sessions": "Sessions",
+    "duration": "Durée",
+    "percent": "%",
+    "no_data": "Aucune donnée pour cette période"
+  },
+  "categories": {
+    "mathematics": "Mathématiques",
+    "science": "Sciences",
+    "languages": "Langues",
+    "programming": "Programmation"
+  },
+  "subjects": {
+    "algebra": "Algèbre",
+    "geometry": "Géométrie",
+    "physics": "Physique",
+    "english": "Anglais",
+    "python": "Python"
+  }
+}

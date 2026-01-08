@@ -1,8 +1,12 @@
 <?php
 require_once __DIR__ . '/../auth.php';
 require_once __DIR__ . '/../src/Database.php';
+require_once __DIR__ . '/../src/Translation.php';
+require_once __DIR__ . '/../src/Auth.php';
 
+$translation = new Translation();
 $db = Database::getInstance();
+$auth = new Auth();
 
 // Traitement des formulaires
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -108,6 +112,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
             break;
+
+        case 'change_language':
+            $lang = $_POST['lang'] ?? 'fr';
+            $auth->updateLanguagePreference($lang);
+            // Redirect to refresh the page with new language
+            header('Location: ' . $_SERVER['REQUEST_URI']);
+            exit;
+            break;
+
+        case 'add_user':
+            if ($auth->isAdmin()) {
+                $user = new User();
+                $userId = $user->createUser(
+                    $_POST['username'],
+                    $_POST['password'],
+                    $_POST['language'] ?? 'fr',
+                    !empty($_POST['is_admin'])
+                );
+                if ($userId && $isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true]);
+                    exit;
+                }
+            }
+            break;
+
+        case 'update_user':
+            if ($auth->isAdmin()) {
+                $user = new User();
+                $result = $user->updateUser(
+                    $_POST['id'],
+                    $_POST['username'],
+                    $_POST['language'] ?? 'fr',
+                    isset($_POST['is_admin']) ? !empty($_POST['is_admin']) : null
+                );
+                if ($result && $isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true]);
+                    exit;
+                }
+            }
+            break;
+
+        case 'delete_user':
+            if ($auth->isAdmin() && $_POST['id'] != $auth->getUserId()) { // Prevent self-deletion
+                $user = new User();
+                $result = $user->deleteUser($_POST['id']);
+                if ($result && $isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true]);
+                    exit;
+                }
+            }
+            break;
+
+        case 'update_password':
+            if ($auth->isAdmin() || $_POST['id'] == $auth->getUserId()) {
+                $user = new User();
+                $result = $user->updatePassword($_POST['id'], $_POST['password']);
+                if ($result && $isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true]);
+                    exit;
+                }
+            }
+            break;
     }
     
     if (!$isAjax) {
@@ -127,11 +197,11 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $translation->getLang() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Time Tracker</title>
+    <title><?= $translation->t('ui.header.title') ?></title>
         <link rel="stylesheet" href="css/style.css">
         <!-- Tailwind CSS CDN -->
         <script src="https://cdn.tailwindcss.com"></script>
@@ -152,17 +222,46 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
     <div class="container">
-        <header class="flex flex-col items-center justify-center py-6">
-            <h1 class="text-4xl font-bold text-primary dark:text-secondary mb-2">Study Time Tracker</h1>
-            <div class="date-display mb-2">Date : <?php echo date('d/m/Y'); ?></div>
-            <button id="themeToggle" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-400 dark:border-gray-600 transition">🌙 Thème sombre</button>
+        <header class="flex justify-between items-center py-6">
+            <h1 class="text-4xl font-bold text-primary dark:text-secondary"><?= $translation->t('ui.header.title') ?></h1>
+            <div class="header-controls flex gap-2 items-center">
+                <?php if ($auth->isAuthenticated()): ?>
+                    <span class="text-gray-700 dark:text-gray-300 mr-2"><?= htmlspecialchars($auth->getUsername()) ?></span>
+                <?php endif; ?>
+
+                <div class="language-selector">
+                    <form method="post" id="langForm" class="inline">
+                        <input type="hidden" name="action" value="change_language">
+                        <select name="lang" onchange="changeLanguage(this.value)" class="px-2 py-1 rounded border">
+                            <?php foreach ($translation->getAvailableLanguages() as $code => $label): ?>
+                                <option value="<?= $code ?>" <?= $translation->getLang() === $code ? 'selected' : '' ?>><?= $label ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </form>
+                </div>
+
+                <button id="themeToggle" class="px-2 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-400 dark:border-gray-600 transition text-xl">🌙</button>
+
+                <?php if ($auth->isAuthenticated()): ?>
+                    <a href="logout.php" class="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600 transition">
+                        <?= $translation->t('ui.auth.logout') ?>
+                    </a>
+                <?php else: ?>
+                    <a href="login.php" class="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600 transition">
+                        <?= $translation->t('ui.auth.login') ?>
+                    </a>
+                <?php endif; ?>
+            </div>
         </header>
         <nav class="tabs flex gap-2 mb-6 border-b-2 border-gray-300 dark:border-gray-700">
-            <button class="tab active" data-tab="dashboard">Dashboard</button>
-            <button class="tab" data-tab="entry">Nouvelle entrée</button>
-            <button class="tab" data-tab="entries">Entrées</button>
-            <button class="tab" data-tab="manage">Gestion</button>
-            <button class="tab" data-tab="reports">Rapports</button>
+            <button class="tab active" data-tab="dashboard"><?= $translation->t('ui.navigation.dashboard') ?></button>
+            <button class="tab" data-tab="entry"><?= $translation->t('ui.navigation.new_entry') ?></button>
+            <button class="tab" data-tab="entries"><?= $translation->t('ui.navigation.entries') ?></button>
+            <button class="tab" data-tab="manage"><?= $translation->t('ui.navigation.manage') ?></button>
+            <button class="tab" data-tab="reports"><?= $translation->t('ui.navigation.reports') ?></button>
+            <?php if ($auth->isAdmin()): ?>
+            <button class="tab" data-tab="admin">Admin</button>
+            <?php endif; ?>
         </nav>
 
         <!-- Dashboard -->
@@ -186,9 +285,9 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                         <input type="hidden" name="action" value="add_entry">
                         <input type="hidden" name="ajax" value="1">
                         <div class="form-group">
-                            <label>Sujet</label>
+                            <label><?= $translation->t('ui.forms.subject') ?></label>
                             <select name="subject_id" required>
-                                <option value="">Sélectionner un sujet...</option>
+                                <option value=""><?= $translation->t('ui.placeholders.select_subject') ?></option>
                                 <?php foreach ($subjects as $subject): ?>
                                     <option value="<?= $subject['id'] ?>">
                                         <?= htmlspecialchars($subject['category_name']) ?> - <?= htmlspecialchars($subject['name']) ?>
@@ -198,27 +297,27 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                         </div>
 
                         <div class="form-group">
-                            <label>Durée (minutes)</label>
+                            <label><?= $translation->t('ui.forms.duration') ?></label>
                             <input type="number" name="duration_minutes" min="1" required>
                         </div>
 
                         <div class="form-group">
-                            <label>Date</label>
+                            <label><?= $translation->t('ui.forms.date') ?></label>
                             <input type="date" name="entry_date" value="<?= date('Y-m-d') ?>" required>
                         </div>
 
                         <div class="form-group">
-                            <label>Notes (optionnel)</label>
+                            <label><?= $translation->t('ui.forms.notes') ?></label>
                             <textarea name="notes" rows="3"></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.save') ?></button>
                     </form>
                 </div>
 
                 <div class="entry-list-column">
                     <div class="recent-entries">
-                        <h3>Entrées récentes</h3>
+                        <h3><?= $translation->t('ui.auth.recent_entries') ?></h3>
                         <div id="recentEntries"></div>
                     </div>
                 </div>
@@ -229,11 +328,11 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
         <div class="tab-content" id="entries">
             <div class="entries-controls">
                 <div class="filter-controls">
-                    <label>Rechercher:</label>
-                    <input type="text" id="entriesSearch" placeholder="Sujet, catégorie ou notes..." value="">
-                    <label>Filtrer par date:</label>
+                    <label><?= $translation->t('ui.search.placeholder') ?></label>
+                    <input type="text" id="entriesSearch" placeholder="<?= $translation->t('ui.search.placeholder') ?>" value="">
+                    <label><?= $translation->t('ui.forms.date') ?></label>
                     <input type="date" id="entriesDateFilter" value="">
-                    <button onclick="clearDateFilter()" class="btn btn-secondary">Tous</button>
+                    <button onclick="clearDateFilter()" class="btn btn-secondary"><?= $translation->t('ui.buttons.all') ?></button>
                 </div>
             </div>
 
@@ -244,82 +343,112 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
         <div class="tab-content" id="manage">
             <div class="management-grid">
                 <div class="form-card">
-                    <h3>Catégories</h3>
+                    <h3><?= $translation->t('ui.forms.category') ?>s</h3>
                     <form method="POST" class="category-form">
                         <input type="hidden" name="action" value="add_category">
                         <input type="hidden" name="ajax" value="1">
                         <div class="form-group">
-                            <input type="text" name="name" placeholder="Nom" required>
+                            <input type="text" name="name" placeholder="<?= $translation->t('ui.forms.name') ?>" required>
                         </div>
                         <div class="form-group">
                             <input type="color" name="color" value="#3b82f6">
                         </div>
-                        <button type="submit" class="btn btn-small">Ajouter</button>
+                        <button type="submit" class="btn btn-small"><?= $translation->t('ui.buttons.add') ?></button>
                     </form>
-                    
+
                     <div class="list" id="categoriesList"></div>
                 </div>
 
                 <div class="form-card">
-                    <h3>Sujets</h3>
+                    <h3><?= $translation->t('ui.forms.subject') ?>s</h3>
                     <form method="POST" class="subject-form">
                         <input type="hidden" name="action" value="add_subject">
                         <input type="hidden" name="ajax" value="1">
                         <div class="form-group">
                             <select name="category_id" required>
-                                <option value="">Catégorie...</option>
+                                <option value=""><?= $translation->t('ui.placeholders.category') ?></option>
                                 <?php foreach ($categories as $cat): ?>
                                     <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="form-group">
-                            <input type="text" name="name" placeholder="Nom du sujet" required>
+                            <input type="text" name="name" placeholder="<?= $translation->t('ui.placeholders.subject_name') ?>" required>
                         </div>
                         <div class="form-group">
-                            <input type="text" name="description" placeholder="Description">
+                            <input type="text" name="description" placeholder="<?= $translation->t('ui.forms.description') ?>">
                         </div>
-                        <button type="submit" class="btn btn-small">Ajouter</button>
+                        <button type="submit" class="btn btn-small"><?= $translation->t('ui.buttons.add') ?></button>
                     </form>
-                    
+
                     <div class="list" id="subjectsList"></div>
                 </div>
             </div>
         </div>
 
+        <!-- Administration -->
+        <?php if ($auth->isAdmin()): ?>
+        <div class="tab-content" id="admin">
+            <div class="management-grid">
+                <div class="form-card">
+                    <h3><?= $translation->t('ui.manage.users') ?></h3>
+                    <form method="POST" class="user-form">
+                        <input type="hidden" name="action" value="add_user">
+                        <input type="hidden" name="ajax" value="1">
+                        <div class="form-group">
+                            <input type="text" name="username" placeholder="<?= $translation->t('ui.auth.username') ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" name="password" placeholder="<?= $translation->t('ui.auth.password') ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <select name="language">
+                                <option value="fr">Français</option>
+                                <option value="en">English</option>
+                                <option value="de">Deutsch</option>
+                                <option value="it">Italiano</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_admin" value="1">
+                                <span class="checkmark"></span>
+                                <?= $translation->t('ui.manage.admin') ?>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-small"><?= $translation->t('ui.buttons.add') ?></button>
+                    </form>
+
+                    <div class="list" id="usersList"></div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Rapports -->
         <div class="tab-content" id="reports">
             <div class="report-controls">
                 <select id="reportPeriod">
-                    <option value="day">Jour</option>
-                    <option value="week">Semaine</option>
-                    <option value="month">Mois</option>
+                    <option value="day"><?= $translation->t('ui.reports.day') ?></option>
+                    <option value="week"><?= $translation->t('ui.reports.week') ?></option>
+                    <option value="month"><?= $translation->t('ui.reports.month') ?></option>
                 </select>
 
                 <!-- Contrôles pour jour et semaine -->
                 <div id="dateInputContainer">
-                    <label>Date de début:</label>
+                    <label><?= $translation->t('ui.reports.start_date') ?></label>
                     <input type="date" id="reportDate" value="<?= date('Y-m-d') ?>">
                 </div>
 
                 <!-- Contrôles pour mois (cachés par défaut) -->
                 <div id="monthInputContainer" style="display: none;">
-                    <label>Mois:</label>
+                    <label><?= $translation->t('ui.reports.month_label') ?></label>
                     <select id="reportMonth">
-                        <option value="1">Janvier</option>
-                        <option value="2">Février</option>
-                        <option value="3">Mars</option>
-                        <option value="4">Avril</option>
-                        <option value="5">Mai</option>
-                        <option value="6">Juin</option>
-                        <option value="7">Juillet</option>
-                        <option value="8">Août</option>
-                        <option value="9">Septembre</option>
-                        <option value="10">Octobre</option>
-                        <option value="11">Novembre</option>
-                        <option value="12">Décembre</option>
+                        <?php foreach ($translation->t('ui.date.months') as $i => $month): ?>
+                            <option value="<?= $i+1 ?>"><?= $month ?></option>
+                        <?php endforeach; ?>
                     </select>
-                    <label>Année:</label>
+                    <label><?= $translation->t('ui.reports.year') ?></label>
                     <select id="reportYear">
                         <?php foreach ($years as $year): ?>
                             <option value="<?= $year ?>" <?= $year == $currentYear ? 'selected' : '' ?>><?= $year ?></option>
@@ -327,8 +456,8 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     </select>
                 </div>
 
-                <button onclick="loadReport()" class="btn btn-primary">Générer</button>
-                <button onclick="exportReportPDF()" class="btn btn-secondary" id="exportPdfBtn" style="display: none;">📄 Exporter PDF</button>
+                <button onclick="loadReport()" class="btn btn-primary"><?= $translation->t('ui.buttons.generate') ?></button>
+                <button onclick="exportReportPDF()" class="btn btn-secondary" id="exportPdfBtn" style="display: none;"><?= $translation->t('ui.buttons.export_pdf') ?></button>
             </div>
 
             <div id="reportContent"></div>
@@ -338,7 +467,7 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
         <div id="editCategoryModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Modifier la catégorie</h3>
+                    <h3><?= $translation->t('ui.modals.edit_category') ?></h3>
                     <button class="modal-close">&times;</button>
                 </div>
                 <form method="POST" class="edit-category-form">
@@ -346,16 +475,16 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     <input type="hidden" name="ajax" value="1">
                     <input type="hidden" name="id" id="editCategoryId">
                     <div class="form-group">
-                        <label>Nom</label>
+                        <label><?= $translation->t('ui.forms.name') ?></label>
                         <input type="text" name="name" id="editCategoryName" required>
                     </div>
                     <div class="form-group">
-                        <label>Couleur</label>
+                        <label><?= $translation->t('ui.forms.color') ?></label>
                         <input type="color" name="color" id="editCategoryColor">
                     </div>
                     <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary modal-cancel">Annuler</button>
-                        <button type="submit" class="btn btn-primary">Modifier</button>
+                        <button type="button" class="btn btn-secondary modal-cancel"><?= $translation->t('ui.buttons.cancel') ?></button>
+                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.edit') ?></button>
                     </div>
                 </form>
             </div>
@@ -364,7 +493,7 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
         <div id="editSubjectModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Modifier le sujet</h3>
+                    <h3><?= $translation->t('ui.modals.edit_subject') ?></h3>
                     <button class="modal-close">&times;</button>
                 </div>
                 <form method="POST" class="edit-subject-form">
@@ -372,7 +501,7 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     <input type="hidden" name="ajax" value="1">
                     <input type="hidden" name="id" id="editSubjectId">
                     <div class="form-group">
-                        <label>Catégorie</label>
+                        <label><?= $translation->t('ui.forms.category') ?></label>
                         <select name="category_id" id="editSubjectCategoryId" required>
                             <?php foreach ($categories as $cat): ?>
                                 <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
@@ -380,16 +509,16 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Nom du sujet</label>
+                        <label><?= $translation->t('ui.forms.subject_name') ?></label>
                         <input type="text" name="name" id="editSubjectName" required>
                     </div>
                     <div class="form-group">
-                        <label>Description</label>
+                        <label><?= $translation->t('ui.forms.description') ?></label>
                         <input type="text" name="description" id="editSubjectDescription">
                     </div>
                     <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary modal-cancel">Annuler</button>
-                        <button type="submit" class="btn btn-primary">Modifier</button>
+                        <button type="button" class="btn btn-secondary modal-cancel"><?= $translation->t('ui.buttons.cancel') ?></button>
+                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.edit') ?></button>
                     </div>
                 </form>
             </div>
@@ -398,7 +527,7 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
         <div id="editEntryModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Modifier l'entrée</h3>
+                    <h3><?= $translation->t('ui.modals.edit_entry') ?></h3>
                     <button class="modal-close">&times;</button>
                 </div>
                 <form method="POST" class="edit-entry-form">
@@ -406,9 +535,9 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     <input type="hidden" name="ajax" value="1">
                     <input type="hidden" name="id" id="editEntryId">
                     <div class="form-group">
-                        <label>Sujet</label>
+                        <label><?= $translation->t('ui.forms.subject') ?></label>
                         <select name="subject_id" id="editEntrySubjectId" required>
-                            <option value="">Sélectionner un sujet...</option>
+                            <option value=""><?= $translation->t('ui.placeholders.select_subject') ?></option>
                             <?php foreach ($subjects as $subject): ?>
                                 <option value="<?= $subject['id'] ?>">
                                     <?= htmlspecialchars($subject['category_name']) ?> - <?= htmlspecialchars($subject['name']) ?>
@@ -417,20 +546,58 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Durée (minutes)</label>
+                        <label><?= $translation->t('ui.forms.duration') ?></label>
                         <input type="number" name="duration_minutes" id="editEntryDuration" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label>Date</label>
+                        <label><?= $translation->t('ui.forms.date') ?></label>
                         <input type="date" name="entry_date" id="editEntryDate" required>
                     </div>
                     <div class="form-group">
-                        <label>Notes (optionnel)</label>
+                        <label><?= $translation->t('ui.forms.notes') ?></label>
                         <textarea name="notes" id="editEntryNotes" rows="3"></textarea>
                     </div>
                     <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary modal-cancel">Annuler</button>
-                        <button type="submit" class="btn btn-primary">Modifier</button>
+                        <button type="button" class="btn btn-secondary modal-cancel"><?= $translation->t('ui.buttons.cancel') ?></button>
+                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.edit') ?></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="editUserModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><?= $translation->t('ui.modals.edit_user') ?></h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <form method="POST" class="edit-user-form">
+                    <input type="hidden" name="action" value="update_user">
+                    <input type="hidden" name="ajax" value="1">
+                    <input type="hidden" name="id" id="editUserId">
+                    <div class="form-group">
+                        <label><?= $translation->t('ui.auth.username') ?></label>
+                        <input type="text" name="username" id="editUserUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label><?= $translation->t('ui.auth.preferred_language') ?></label>
+                        <select name="language" id="editUserLanguage">
+                            <option value="fr">Français</option>
+                            <option value="en">English</option>
+                            <option value="de">Deutsch</option>
+                            <option value="it">Italiano</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="is_admin" id="editUserIsAdmin" value="1">
+                            <span class="checkmark"></span>
+                            <?= $translation->t('ui.manage.admin') ?>
+                        </label>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary modal-cancel"><?= $translation->t('ui.buttons.cancel') ?></button>
+                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.edit') ?></button>
                     </div>
                 </form>
             </div>

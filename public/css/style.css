@@ -26,7 +26,6 @@ body, html {
 }
 
 header {
-    text-align: center;
     margin-bottom: 30px;
 }
 
@@ -46,24 +45,22 @@ header h1 {
 
 /* Theme Toggle Button */
 #themeToggle {
-    background: #e5e7eb;
+    background: transparent;
     color: #1f2937;
-    border: 2px solid #d1d5db;
-    padding: 10px 20px;
-    border-radius: 8px;
+    border: none;
+    padding: 0;
     cursor: pointer;
-    font-weight: 500;
+    font-size: 1.25rem;
     transition: all 0.3s;
 }
 
 .dark #themeToggle {
-    background: #374151;
+    background: transparent;
     color: #e5e7eb;
-    border-color: #4b5563;
 }
 
 #themeToggle:hover {
-    transform: translateY(-2px);
+    opacity: 0.8;
 }
 
 /* Onglets */
@@ -622,13 +619,73 @@ header h1 {
     background: #111827;
 }
 
+/* Checkbox Styling */
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    cursor: pointer;
+    font-weight: normal !important;
+    margin-bottom: 0 !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    height: 18px;
+    width: 18px;
+    background-color: #f9fafb;
+    border: 2px solid #d1d5db;
+    border-radius: 3px;
+    margin-right: 12px;
+    transition: all 0.3s;
+    display: inline-block;
+    position: relative;
+}
+
+.dark .checkmark {
+    background-color: #111827;
+    border-color: #374151;
+}
+
+.checkbox-label input[type="checkbox"]:checked ~ .checkmark {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-label input[type="checkbox"]:checked ~ .checkmark:after {
+    display: block;
+}
+
+.checkbox-label:hover .checkmark {
+    border-color: #3b82f6;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .entry-layout {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
+
     .charts-grid {
         grid-template-columns: 1fr;
         gap: 20px;

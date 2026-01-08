@@ -1,0 +1,138 @@
+{
+  "ui": {
+    "header": {
+      "title": "Tracker Tempo di Studio",
+      "date": "Data: "
+    },
+    "navigation": {
+      "dashboard": "Dashboard",
+      "new_entry": "Nuova voce",
+      "entry": "Nuova voce",
+      "entries": "Voci",
+      "manage": "Gestione",
+      "reports": "Report"
+    },
+    "forms": {
+      "subject": "Materia",
+      "duration": "Durata (minuti)",
+      "date": "Data",
+      "notes": "Note (opzionale)",
+      "name": "Nome",
+      "color": "Colore",
+      "category": "Categoria",
+      "subject_name": "Nome materia",
+      "description": "Descrizione"
+    },
+    "buttons": {
+      "save": "Salva",
+      "add": "Aggiungi",
+      "cancel": "Annulla",
+      "edit": "Modifica",
+      "generate": "Genera",
+      "export_pdf": "📄 Esporta PDF",
+      "all": "Tutti"
+    },
+    "placeholders": {
+      "select_subject": "Seleziona una materia...",
+      "name": "Nome",
+      "category": "Categoria...",
+      "subject_name": "Nome materia"
+    },
+    "tables": {
+      "category": "Categoria",
+      "subjects": "Materie",
+      "sessions": "Sessioni",
+      "duration": "Durata",
+      "percent": "%"
+    },
+    "modals": {
+      "edit_category": "Modifica categoria",
+      "edit_subject": "Modifica materia",
+      "edit_entry": "Modifica voce"
+    },
+    "messages": {
+      "no_entry_today": "Nessuna voce oggi",
+      "no_category": "Nessuna categoria",
+      "no_subject": "Nessuna materia",
+      "no_data_period": "Nessun dato per questo periodo",
+      "delete": "Eliminare?",
+      "delete_category": "Eliminare questa categoria e tutte le sue materie?",
+      "delete_subject": "Eliminare questa materia?",
+      "delete_entry": "Eliminare questa voce?",
+      "error": "Errore:",
+      "success": "Successo"
+    },
+    "charts": {
+      "category_today": "Distribuzione per categoria (oggi)",
+      "category_week": "Tempo per categoria (ultimi 7 giorni)",
+      "minutes": "minuti"
+    },
+    "reports": {
+      "day": "Giorno",
+      "week": "Settimana",
+      "month": "Mese",
+      "start_date": "Data di inizio:",
+      "month_label": "Mese:",
+      "year": "Anno:",
+      "day_of": "Giorno del",
+      "week_of": "Settimana dal ... al ...",
+      "month_of": "Mese di ..."
+    },
+    "date": {
+      "months": ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
+    },
+    "search": {
+      "placeholder": "Materia, categoria o note..."
+    },
+    "auth": {
+      "username": "Nome utente",
+      "password": "Password",
+      "confirm_password": "Conferma password",
+      "preferred_language": "Lingua preferita",
+      "login": "Accedi",
+      "register": "Registrati",
+      "login_tab": "Accesso",
+      "register_tab": "Registrazione",
+      "logout": "Disconnetti",
+      "logged_in_as": "Connesso come",
+      "back_to_home": "Torna alla home",
+      "dark_theme": "Tema scuro",
+      "recent_entries": "Voci recenti",
+      "enter_credentials": "Inserisci un nome utente e una password.",
+      "passwords_no_match": "Le password non corrispondono.",
+      "password_min_length": "La password deve essere lunga almeno 6 caratteri.",
+      "username_exists": "Questo nome utente esiste già.",
+      "account_created": "Account creato con successo. Ora puoi accedere.",
+      "account_creation_error": "Errore durante la creazione dell'account.",
+      "invalid_credentials": "Nome utente o password errati."
+    },
+    "manage": {
+      "users": "Utenti"
+    }
+  },
+  "pdf": {
+    "title": "Report di Studio",
+    "generated_on": "Generato il",
+    "auto_generated": "Report generato automaticamente da Tracker Tempo di Studio",
+    "total": "Totale:",
+    "category": "Categoria",
+    "subjects": "Materie",
+    "sessions": "Sessioni",
+    "duration": "Durata",
+    "percent": "%",
+    "no_data": "Nessun dato per questo periodo"
+  },
+  "categories": {
+    "mathematics": "Matematica",
+    "science": "Scienze",
+    "languages": "Lingue",
+    "programming": "Programmazione"
+  },
+  "subjects": {
+    "algebra": "Algebra",
+    "geometry": "Geometria",
+    "physics": "Fisica",
+    "english": "Inglese",
+    "python": "Python"
+  }
+}
