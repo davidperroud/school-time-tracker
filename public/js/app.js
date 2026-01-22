@@ -22,6 +22,69 @@ function t(key) {
     return value;
 }
 
+function showNotification(type, message) {
+    const container = document.getElementById('notificationContainer');
+    if (!container) return;
+
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    container.appendChild(notification);
+
+    requestAnimationFrame(() => notification.classList.add('show'));
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+        notification.addEventListener('transitionend', () => notification.remove());
+    }, 3500);
+}
+
+function getNotificationKey(action, success) {
+    let actionType = 'create';
+    if (action?.startsWith('update_')) actionType = 'update';
+    if (action?.startsWith('delete_')) actionType = 'delete';
+    if (action?.startsWith('add_')) actionType = 'create';
+
+    const status = success ? 'success' : 'error';
+    return `ui.notifications.${actionType}_${status}`;
+}
+
+function showActionNotification(action, success) {
+    const key = getNotificationKey(action, success);
+    const type = success ? 'success' : 'error';
+    showNotification(type, t(key));
+}
+
+async function submitAjaxForm(form) {
+    const formData = new FormData(form);
+    const action = formData.get('action');
+
+    try {
+        const response = await fetch('index.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`Request failed: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result?.success) {
+            showActionNotification(action, true);
+            return { success: true, result };
+        }
+
+        showActionNotification(action, false);
+        return { success: false, result };
+    } catch (error) {
+        console.error('Erreur:', error);
+        showActionNotification(action, false);
+        return { success: false, error };
+    }
+}
+
 // Global flag to track if translations are loaded
 let translationsLoaded = false;
 
@@ -90,20 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (entryForm) {
         entryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(entryForm);
-            try {
-                const response = await fetch('index.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    entryForm.reset();
-                    entryForm.querySelector('input[name="entry_date"]').value = new Date().toISOString().split('T')[0];
-                    loadRecentEntries();
-                    loadDashboard();
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
+            const { success } = await submitAjaxForm(entryForm);
+            if (success) {
+                entryForm.reset();
+                entryForm.querySelector('input[name="entry_date"]').value = new Date().toISOString().split('T')[0];
+                loadRecentEntries();
+                loadDashboard();
             }
         });
     }
@@ -113,19 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (categoryForm) {
         categoryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(categoryForm);
-            try {
-                const response = await fetch('index.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    categoryForm.reset();
-                    categoryForm.querySelector('input[name="color"]').value = '#3b82f6';
-                    loadManagementLists();
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
+            const { success } = await submitAjaxForm(categoryForm);
+            if (success) {
+                categoryForm.reset();
+                categoryForm.querySelector('input[name="color"]').value = '#3b82f6';
+                loadManagementLists();
             }
         });
     }
@@ -135,18 +182,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (subjectForm) {
         subjectForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(subjectForm);
-            try {
-                const response = await fetch('index.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    subjectForm.reset();
-                    loadManagementLists();
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
+            const { success } = await submitAjaxForm(subjectForm);
+            if (success) {
+                subjectForm.reset();
+                loadManagementLists();
             }
         });
     }
@@ -484,9 +523,10 @@ function displayCategories(categories) {
             </div>
             <div class="list-item-actions">
                 <button class="btn-edit" onclick="editCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}', '${cat.color}')" title="Modifier">✏️</button>
-                <form method="POST" style="display: inline;">
+                <form method="POST" style="display: inline;" data-ajax>
                     <input type="hidden" name="action" value="delete_category">
                     <input type="hidden" name="id" value="${cat.id}">
+                    <input type="hidden" name="ajax" value="1">
                     <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_category'))" title="${t('ui.buttons.cancel')}">🗑️</button>
                 </form>
             </div>
@@ -801,19 +841,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editCategoryForm) {
         editCategoryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(editCategoryForm);
-            try {
-                const response = await fetch('index.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    document.getElementById('editCategoryModal').style.display = 'none';
-                    loadManagementLists();
-                    loadDashboard(); // Rafraîchir les graphiques au cas où la couleur change
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
+            const { success } = await submitAjaxForm(editCategoryForm);
+            if (success) {
+                document.getElementById('editCategoryModal').style.display = 'none';
+                loadManagementLists();
+                loadDashboard(); // Rafraîchir les graphiques au cas où la couleur change
             }
         });
     }
@@ -823,19 +855,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editSubjectForm) {
         editSubjectForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(editSubjectForm);
-            try {
-                const response = await fetch('index.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    document.getElementById('editSubjectModal').style.display = 'none';
-                    loadManagementLists();
-                    loadRecentEntries(); // Rafraîchir les entrées récentes au cas où le nom change
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
+            const { success } = await submitAjaxForm(editSubjectForm);
+            if (success) {
+                document.getElementById('editSubjectModal').style.display = 'none';
+                loadManagementLists();
+                loadRecentEntries(); // Rafraîchir les entrées récentes au cas où le nom change
             }
         });
     }
@@ -845,20 +869,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editEntryForm) {
         editEntryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(editEntryForm);
-            try {
-                const response = await fetch('index.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    document.getElementById('editEntryModal').style.display = 'none';
-                    loadAllEntries(); // Rafraîchir la liste des entrées
-                    loadRecentEntries(); // Rafraîchir les entrées récentes
-                    loadDashboard(); // Rafraîchir le dashboard
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
+            const { success } = await submitAjaxForm(editEntryForm);
+            if (success) {
+                document.getElementById('editEntryModal').style.display = 'none';
+                loadAllEntries(); // Rafraîchir la liste des entrées
+                loadRecentEntries(); // Rafraîchir les entrées récentes
+                loadDashboard(); // Rafraîchir le dashboard
             }
         });
     }
@@ -880,18 +896,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (userForm) {
         userForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(userForm);
-            try {
-                const response = await fetch('index.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    userForm.reset();
-                    loadUserList();
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
+            const { success } = await submitAjaxForm(userForm);
+            if (success) {
+                userForm.reset();
+                loadUserList();
             }
         });
     }
@@ -901,18 +909,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editUserForm) {
         editUserForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(editUserForm);
-            try {
-                const response = await fetch('index.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    document.getElementById('editUserModal').style.display = 'none';
-                    loadUserList();
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
+            const { success } = await submitAjaxForm(editUserForm);
+            if (success) {
+                document.getElementById('editUserModal').style.display = 'none';
+                loadUserList();
             }
         });
     }
@@ -948,9 +948,10 @@ function displayUsers(users) {
             </div>
             <div class="list-item-actions">
                 <button class="btn-edit" onclick="editUser(${user.id}, '${user.username.replace(/'/g, "\\'")}', '${user.language_preference}', ${user.is_admin})" title="Modifier">✏️</button>
-                <form method="POST" style="display: inline;">
+                <form method="POST" style="display: inline;" data-ajax>
                     <input type="hidden" name="action" value="delete_user">
                     <input type="hidden" name="id" value="${user.id}">
+                    <input type="hidden" name="ajax" value="1">
                     <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_user'))" title="Supprimer">🗑️</button>
                 </form>
             </div>
@@ -965,4 +966,3 @@ function editUser(id, username, language, isAdmin) {
     document.getElementById('editUserIsAdmin').checked = isAdmin == 1;
     document.getElementById('editUserModal').style.display = 'block';
 }
-

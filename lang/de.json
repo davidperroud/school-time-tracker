@@ -62,6 +62,14 @@
       "error": "Fehler:",
       "success": "Erfolg"
     },
+    "notifications": {
+      "create_success": "Element erfolgreich erstellt",
+      "create_error": "Fehler beim Erstellen des Elements",
+      "update_success": "Element erfolgreich aktualisiert",
+      "update_error": "Fehler beim Aktualisieren des Elements",
+      "delete_success": "Element erfolgreich gelöscht",
+      "delete_error": "Fehler beim Löschen des Elements"
+    },
     "charts": {
       "category_today": "Kategorieverteilung (heute)",
       "category_week": "Zeit nach Kategorie (letzte 7 Tage)",

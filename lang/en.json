@@ -131,6 +131,14 @@
       "delete_user": "Delete this user?",
       "error": "Error:",
       "success": "Success"
+    },
+    "notifications": {
+      "create_success": "Item created successfully",
+      "create_error": "Failed to create item",
+      "update_success": "Item updated successfully",
+      "update_error": "Failed to update item",
+      "delete_success": "Item deleted successfully",
+      "delete_error": "Failed to delete item"
     }
   },
   "pdf": {

@@ -15,100 +15,136 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     switch ($action) {
         case 'add_category':
-            $db->execute(
+            $result = $db->execute(
                 "INSERT INTO categories (name, color) VALUES (?, ?)",
                 [$_POST['name'], $_POST['color']]
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true]);
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to add category']);
+                }
                 exit;
             }
             break;
             
         case 'add_subject':
-            $db->execute(
+            $result = $db->execute(
                 "INSERT INTO subjects (category_id, name, description) VALUES (?, ?, ?)",
                 [$_POST['category_id'], $_POST['name'], $_POST['description'] ?? '']
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true]);
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to add subject']);
+                }
                 exit;
             }
             break;
-            
+
         case 'add_entry':
-            $db->execute(
+            $result = $db->execute(
                 "INSERT INTO time_entries (subject_id, duration_minutes, entry_date, notes) VALUES (?, ?, ?, ?)",
                 [$_POST['subject_id'], $_POST['duration_minutes'], $_POST['entry_date'], $_POST['notes'] ?? '']
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true]);
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to add entry']);
+                }
                 exit;
             }
             break;
-            
+
         case 'delete_category':
-            $db->execute("DELETE FROM categories WHERE id = ?", [$_POST['id']]);
+            $result = $db->execute("DELETE FROM categories WHERE id = ?", [$_POST['id']]);
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true]);
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to delete category']);
+                }
                 exit;
             }
             break;
-            
+
         case 'delete_subject':
-            $db->execute("DELETE FROM subjects WHERE id = ?", [$_POST['id']]);
+            $result = $db->execute("DELETE FROM subjects WHERE id = ?", [$_POST['id']]);
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true]);
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to delete subject']);
+                }
                 exit;
             }
             break;
-            
+
         case 'delete_entry':
-            $db->execute("DELETE FROM time_entries WHERE id = ?", [$_POST['id']]);
+            $result = $db->execute("DELETE FROM time_entries WHERE id = ?", [$_POST['id']]);
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true]);
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to delete entry']);
+                }
                 exit;
             }
             break;
 
         case 'update_category':
-            $db->execute(
+            $result = $db->execute(
                 "UPDATE categories SET name = ?, color = ? WHERE id = ?",
                 [$_POST['name'], $_POST['color'], $_POST['id']]
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true]);
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to update category']);
+                }
                 exit;
             }
             break;
 
         case 'update_subject':
-            $db->execute(
+            $result = $db->execute(
                 "UPDATE subjects SET category_id = ?, name = ?, description = ? WHERE id = ?",
                 [$_POST['category_id'], $_POST['name'], $_POST['description'] ?? '', $_POST['id']]
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true]);
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to update subject']);
+                }
                 exit;
             }
             break;
 
         case 'update_entry':
-            $db->execute(
+            $result = $db->execute(
                 "UPDATE time_entries SET subject_id = ?, duration_minutes = ?, entry_date = ?, notes = ? WHERE id = ?",
                 [$_POST['subject_id'], $_POST['duration_minutes'], $_POST['entry_date'], $_POST['notes'] ?? '', $_POST['id']]
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true]);
+                if ($result) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Failed to update entry']);
+                }
                 exit;
             }
             break;
@@ -221,6 +257,7 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div id="notificationContainer"></div>
     <div class="container">
         <header class="flex justify-between items-center py-6">
             <h1 class="text-4xl font-bold text-primary dark:text-secondary"><?= $translation->t('ui.header.title') ?></h1>

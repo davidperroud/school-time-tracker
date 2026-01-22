@@ -62,6 +62,14 @@
       "error": "Errore:",
       "success": "Successo"
     },
+    "notifications": {
+      "create_success": "Elemento creato con successo",
+      "create_error": "Errore nella creazione dell'elemento",
+      "update_success": "Elemento aggiornato con successo",
+      "update_error": "Errore nell'aggiornamento dell'elemento",
+      "delete_success": "Elemento eliminato con successo",
+      "delete_error": "Errore nell'eliminazione dell'elemento"
+    },
     "charts": {
       "category_today": "Distribuzione per categoria (oggi)",
       "category_week": "Tempo per categoria (ultimi 7 giorni)",
