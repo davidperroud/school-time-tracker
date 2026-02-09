@@ -69,7 +69,7 @@ Add password reset methods to User class.
 - [x] Validation checks expiration and usage
 - [x] Token can be marked as used
 
-### Phase 3: Request Page
+### Phase 3: Request Page ✅ DONE
 Create the password reset request page.
 
 **Tasks:**
@@ -98,7 +98,7 @@ Create the password reset request page.
 - Token created and PIN displayed
 - Link to reset page works
 
-### Phase 4: Reset Page
+### Phase 4: Reset Page ✅ DONE
 Create the password reset page with token/PIN validation.
 
 **Tasks:**
@@ -124,7 +124,7 @@ Create the password reset page with token/PIN validation.
 - Token marked as used
 - Success message displayed
 
-### Phase 5: Login Integration
+### Phase 5: Login Integration ✅ DONE
 Integrate password recovery flow with login page.
 
 **Tasks:**
