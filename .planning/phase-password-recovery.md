@@ -26,26 +26,26 @@ Add a password recovery system to the School Time Tracker application, allowing 
 
 ## Implementation Plan
 
-### Phase 1: Database Schema
+### Phase 1: Database Schema ✅ DONE
 Create the password_resets table to store reset tokens.
 
 **Tasks:**
-- [ ] Design and create `password_resets` table with columns:
-  - `id` (INTEGER PRIMARY KEY)
-  - `user_id` (INTEGER, FK to users)
-  - `token` (TEXT, UNIQUE)
-  - `pin` (TEXT, for fallback)
-  - `expires_at` (DATETIME)
-  - `used_at` (DATETIME, nullable)
-  - `created_at` (DATETIME)
-- [ ] Add indexes for efficient lookups
-- [ ] Write migration SQL or update init_db.php
-- [ ] Test table creation
+- [x] Design and create `password_resets` table with columns:
+  - [x] `id` (INTEGER PRIMARY KEY)
+  - [x] `user_id` (INTEGER, FK to users)
+  - [x] `token` (TEXT, UNIQUE)
+  - [x] `pin` (TEXT, for fallback)
+  - [x] `expires_at` (DATETIME)
+  - [x] `used_at` (DATETIME, nullable)
+  - [x] `created_at` (DATETIME)
+- [x] Add indexes for efficient lookups
+- [x] Write migration SQL or update init_db.php
+- [x] Test table creation
 
 **Success Criteria:**
-- Table exists with correct schema
-- Foreign key constraint to users table works
-- Indexes allow fast token lookups
+- [x] Table exists with correct schema
+- [x] Foreign key constraint to users table works
+- [x] Indexes allow fast token lookups
 
 ### Phase 2: User Model Extensions
 Add password reset methods to User class.
