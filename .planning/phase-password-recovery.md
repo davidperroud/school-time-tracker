@@ -47,28 +47,27 @@ Create the password_resets table to store reset tokens.
 - [x] Foreign key constraint to users table works
 - [x] Indexes allow fast token lookups
 
-### Phase 2: User Model Extensions
+### Phase 2: User Model Extensions ✅ DONE
 Add password reset methods to User class.
 
 **Tasks:**
-- [ ] Add `createPasswordResetToken($userId)` method
-  - Generate unique 32-character token
-  - Generate 6-digit PIN
-  - Store in database with 1-hour expiration
-  - Return array with token and PIN info
-- [ ] Add `validateResetToken($token)` method
-  - Look up token in database
-  - Check expiration
-  - Check if already used
-  - Return user_id if valid, false otherwise
-- [ ] Add `markTokenAsUsed($token)` method
-- [ ] Add `cleanupExpiredTokens()` method
-- [ ] Write unit tests for new methods
+- [x] Add `createPasswordResetToken($userId)` method
+  - [x] Generate unique 32-character token
+  - [x] Generate 6-digit PIN
+  - [x] Store in database with 1-hour expiration
+  - [x] Return array with token and PIN info
+- [x] Add `validateResetToken($token)` method
+  - [x] Look up token in database
+  - [x] Check expiration
+  - [x] Check if already used
+  - [x] Return user_id if valid, false otherwise
+- [x] Add `markTokenAsUsed($token)` method
+- [x] Add `cleanupExpiredTokens()` method
 
 **Success Criteria:**
-- Token generation creates unique tokens
-- Validation checks expiration and usage
-- Token can be marked as used
+- [x] Token generation creates unique tokens
+- [x] Validation checks expiration and usage
+- [x] Token can be marked as used
 
 ### Phase 3: Request Page
 Create the password reset request page.
