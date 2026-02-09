@@ -1,15 +1,7 @@
--- Utilisateurs
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    language_preference TEXT DEFAULT 'fr',
-    is_admin INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_login DATETIME NULL
-);
+-- Migration: Ajouter table password_resets
+-- Date: 2026-02-09
 
--- Mot de passe oublié - Jetons de réinitialisation
+-- Créer la table password_resets si elle n'existe pas
 CREATE TABLE IF NOT EXISTS password_resets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -21,7 +13,7 @@ CREATE TABLE IF NOT EXISTS password_resets (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Index pour les recherches rapides
+-- Créer les indexes pour les recherches rapides
 CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
 CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_resets_expires ON password_resets(expires_at);
