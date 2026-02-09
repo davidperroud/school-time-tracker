@@ -107,7 +107,30 @@
       "invalid_credentials": "Nom d'utilisateur ou mot de passe incorrect.",
       "setup_admin": "Configuration administrateur",
       "setup_description": "Bienvenue ! Pour commencer, créez le compte administrateur principal.",
-      "create_admin": "Créer l'administrateur"
+      "create_admin": "Créer l'administrateur",
+      "reset": {
+        "title": "Mot de passe oublié",
+        "description": "Entrez votre nom d'utilisateur pour recevoir un code de réinitialisation.",
+        "username_required": "Veuillez entrer votre nom d'utilisateur.",
+        "username_not_found": "Aucun compte trouvé avec ce nom d'utilisateur.",
+        "error_creating_token": "Erreur lors de la création du code de réinitialisation.",
+        "success_title": "Code envoyé !",
+        "success_description": "Entrez le code ci-dessous pour réinitialiser votre mot de passe.",
+        "pin_label": "Votre code de réinitialisation :",
+        "enter_new_password": "Entrer le nouveau mot de passe",
+        "send_code": "Recevoir le code",
+        "new_password": "Nouveau mot de passe",
+        "enter_pin": "Entrez votre code",
+        "pin_code": "Code PIN",
+        "change_password": "Modifier le mot de passe",
+        "enter_new_password_desc": "Entrez votre nouveau mot de passe ci-dessous.",
+        "request_new_code": "Demander un nouveau code",
+        "invalid_token": "Code invalide ou expiré. Veuillez demander un nouveau code.",
+        "password_update_error": "Erreur lors de la mise à jour du mot de passe.",
+        "back_to_login": "Retour à la connexion",
+        "token_link_below": "Vous pouvez aussi utiliser ce lien :",
+        "password_reset_success": "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter."
+      }
     },
     "manage": {
       "users": "Utilisateurs",

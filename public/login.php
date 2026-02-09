@@ -9,6 +9,12 @@ $auth = new Auth();
 $message = '';
 $messageType = '';
 
+// Message de succès après réinitialisation du mot de passe
+if (isset($_GET['reset']) && $_GET['reset'] === 'success') {
+    $message = $translation->t('ui.auth.reset.password_reset_success');
+    $messageType = 'success';
+}
+
 // Traitement du formulaire de connexion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
     $username = trim($_POST['username'] ?? '');
@@ -117,6 +123,12 @@ if ($auth->isAuthenticated()) {
             <div class="text-center mt-6">
                 <a href="index.php" class="text-primary hover:underline">
                     ← <?= $translation->t('ui.auth.back_to_home') ?>
+                </a>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="reset_request.php" class="text-sm text-gray-500 hover:text-primary">
+                    <?= $translation->t('ui.auth.reset.title') ?>
                 </a>
             </div>
         </div>

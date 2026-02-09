@@ -107,7 +107,30 @@
       "invalid_credentials": "Invalid username or password.",
       "setup_admin": "Administrator Setup",
       "setup_description": "Welcome! To get started, create the main administrator account.",
-      "create_admin": "Create Administrator"
+      "create_admin": "Create Administrator",
+      "reset": {
+        "title": "Forgot Password",
+        "description": "Enter your username to receive a reset code.",
+        "username_required": "Please enter your username.",
+        "username_not_found": "No account found with this username.",
+        "error_creating_token": "Error creating reset code.",
+        "success_title": "Code Sent!",
+        "success_description": "Enter the code below to reset your password.",
+        "pin_label": "Your reset code:",
+        "enter_new_password": "Enter New Password",
+        "send_code": "Get Code",
+        "new_password": "New Password",
+        "enter_pin": "Enter Your Code",
+        "pin_code": "PIN Code",
+        "change_password": "Change Password",
+        "enter_new_password_desc": "Enter your new password below.",
+        "request_new_code": "Request New Code",
+        "invalid_token": "Invalid or expired code. Please request a new code.",
+        "password_update_error": "Error updating password.",
+        "back_to_login": "Back to Login",
+        "token_link_below": "You can also use this link:",
+        "password_reset_success": "Your password has been successfully reset. You can now log in."
+      }
     },
     "manage": {
       "users": "Users",

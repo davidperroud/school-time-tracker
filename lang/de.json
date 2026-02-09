@@ -112,7 +112,30 @@
       "username_exists": "Dieser Benutzername existiert bereits.",
       "account_created": "Konto erfolgreich erstellt. Sie können sich jetzt anmelden.",
       "account_creation_error": "Fehler beim Erstellen des Kontos.",
-      "invalid_credentials": "Falscher Benutzername oder Passwort."
+      "invalid_credentials": "Falscher Benutzername oder Passwort.",
+      "reset": {
+        "title": "Passwort vergessen",
+        "description": "Geben Sie Ihren Benutzernamen ein, um einen Reset-Code zu erhalten.",
+        "username_required": "Bitte geben Sie Ihren Benutzernamen ein.",
+        "username_not_found": "Kein Konto mit diesem Benutzernamen gefunden.",
+        "error_creating_token": "Fehler beim Erstellen des Reset-Codes.",
+        "success_title": "Code gesendet!",
+        "success_description": "Geben Sie den Code unten ein, um Ihr Passwort zurückzusetzen.",
+        "pin_label": "Ihr Reset-Code:",
+        "enter_new_password": "Neues Passwort eingeben",
+        "send_code": "Code erhalten",
+        "new_password": "Neues Passwort",
+        "enter_pin": "Code eingeben",
+        "pin_code": "PIN-Code",
+        "change_password": "Passwort ändern",
+        "enter_new_password_desc": "Geben Sie unten Ihr neues Passwort ein.",
+        "request_new_code": "Neuen Code anfordern",
+        "invalid_token": "Ungültiger oder abgelaufener Code. Bitte fordern Sie einen neuen Code an.",
+        "password_update_error": "Fehler beim Aktualisieren des Passworts.",
+        "back_to_login": "Zurück zur Anmeldung",
+        "token_link_below": "Sie können auch diesen Link verwenden:",
+        "password_reset_success": "Ihr Passwort wurde erfolgreich zurückgesetzt. Sie können sich jetzt anmelden."
+      }
     },
     "manage": {
       "users": "Benutzer"

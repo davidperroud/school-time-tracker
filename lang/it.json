@@ -112,7 +112,30 @@
       "username_exists": "Questo nome utente esiste già.",
       "account_created": "Account creato con successo. Ora puoi accedere.",
       "account_creation_error": "Errore durante la creazione dell'account.",
-      "invalid_credentials": "Nome utente o password errati."
+      "invalid_credentials": "Nome utente o password errati.",
+      "reset": {
+        "title": "Password dimenticata",
+        "description": "Inserisci il tuo nome utente per ricevere un codice di ripristino.",
+        "username_required": "Inserisci il tuo nome utente.",
+        "username_not_found": "Nessun account trovato con questo nome utente.",
+        "error_creating_token": "Errore durante la creazione del codice di ripristino.",
+        "success_title": "Codice inviato!",
+        "success_description": "Inserisci il codice qui sotto per reimpostare la password.",
+        "pin_label": "Il tuo codice di ripristino:",
+        "enter_new_password": "Inserisci nuova password",
+        "send_code": "Ricevi codice",
+        "new_password": "Nuova password",
+        "enter_pin": "Inserisci il tuo codice",
+        "pin_code": "Codice PIN",
+        "change_password": "Cambia password",
+        "enter_new_password_desc": "Inserisci la tua nuova password qui sotto.",
+        "request_new_code": "Richiedi nuovo codice",
+        "invalid_token": "Codice non valido o scaduto. Richiedi un nuovo codice.",
+        "password_update_error": "Errore durante l'aggiornamento della password.",
+        "back_to_login": "Torna all'accesso",
+        "token_link_below": "Puoi anche usare questo link:",
+        "password_reset_success": "La tua password è stata reimpostata con successo. Ora puoi accedere."
+      }
     },
     "manage": {
       "users": "Utenti"
