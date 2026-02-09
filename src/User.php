@@ -181,4 +181,111 @@ class User {
 
         return $user !== null;
     }
+
+    /**
+     * Créer un jeton de réinitialisation de mot de passe
+     * Génère un token unique et un code PIN, stocke en base
+     */
+    public function createPasswordResetToken($userId) {
+        $token = bin2hex(random_bytes(32));
+        $pin = sprintf('%06d', random_int(0, 999999));
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        $result = $this->db->execute(
+            "INSERT INTO password_resets (user_id, token, pin, expires_at) VALUES (?, ?, ?, ?)",
+            [$userId, $token, $pin, $expiresAt]
+        );
+
+        if ($result) {
+            return [
+                'token' => $token,
+                'pin' => $pin,
+                'expires_at' => $expiresAt
+            ];
+        }
+
+        return false;
+    }
+
+    /**
+     * Valider un jeton de réinitialisation
+     * Vérifie que le token existe, n'est pas expiré et n'est pas encore utilisé
+     */
+    public function validateResetToken($token) {
+        $record = $this->db->fetchOne(
+            "SELECT * FROM password_resets WHERE token = ? AND used_at IS NULL AND expires_at > datetime('now')",
+            [$token]
+        );
+
+        if ($record) {
+            return [
+                'user_id' => $record['user_id'],
+                'pin' => $record['pin'],
+                'expires_at' => $record['expires_at']
+            ];
+        }
+
+        return false;
+    }
+
+    /**
+     * Valider un code PIN de réinitialisation
+     */
+    public function validateResetPin($pin) {
+        $record = $this->db->fetchOne(
+            "SELECT * FROM password_resets WHERE pin = ? AND used_at IS NULL AND expires_at > datetime('now')",
+            [$pin]
+        );
+
+        if ($record) {
+            return [
+                'user_id' => $record['user_id'],
+                'token' => $record['token'],
+                'expires_at' => $record['expires_at']
+            ];
+        }
+
+        return false;
+    }
+
+    /**
+     * Marquer un jeton de réinitialisation comme utilisé
+     */
+    public function markTokenAsUsed($token) {
+        return $this->db->execute(
+            "UPDATE password_resets SET used_at = datetime('now') WHERE token = ?",
+            [$token]
+        );
+    }
+
+    /**
+     * Marquer un jeton comme utilisé par PIN
+     */
+    public function markPinAsUsed($pin) {
+        return $this->db->execute(
+            "UPDATE password_resets SET used_at = datetime('now') WHERE pin = ?",
+            [$pin]
+        );
+    }
+
+    /**
+     * Nettoyer les jetons de réinitialisation expirés
+     */
+    public function cleanupExpiredTokens() {
+        return $this->db->execute(
+            "DELETE FROM password_resets WHERE expires_at <= datetime('now') OR used_at IS NOT NULL"
+        );
+    }
+
+    /**
+     * Récupérer le user ID par token de réinitialisation
+     */
+    public function getUserIdByResetToken($token) {
+        $record = $this->db->fetchOne(
+            "SELECT user_id FROM password_resets WHERE token = ?",
+            [$token]
+        );
+
+        return $record ? $record['user_id'] : null;
+    }
 }
