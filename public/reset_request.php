@@ -6,6 +6,7 @@ require_once __DIR__ . '/../src/User.php';
 
 $translation = new Translation();
 $user = new User();
+$auth = new Auth();
 
 $message = '';
 $messageType = '';
