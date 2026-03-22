@@ -29,6 +29,20 @@ Thumbs.db
 *.swp
 *.swo
 
+# Agent/Coding assistant files
+.continue/
+.planning/
+.tendcoder/
+.zendflow/
+AGENTS.md
+IMPLEMENTATION_CHANGELOG.md
+LANGUAGE_QUICK_START.md
+MULTI_LANGUAGE_IMPLEMENTATION.md
+README.md
+README_TRANSLATIONS.md
+rapport_mensuel_plan.md
+todo_list.md
+
 # Composer
 vendor/
 
