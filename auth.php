@@ -29,5 +29,4 @@ if (!$authenticated) {
     header('Location: login.php');
     exit;
 }
-?>
 

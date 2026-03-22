@@ -1,0 +1,28 @@
+RewriteEngine On
+Options +FollowSymLinks
+
+<IfModule mod_rewrite.c>
+    RewriteBase /
+    
+    # API routes
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^api$ api.php [L]
+    RewriteRule ^api/(.*)$ api.php/$1 [L]
+    
+    # Login/logout
+    RewriteRule ^login$ login.php [L]
+    RewriteRule ^logout$ logout.php [L]
+    
+    # All other requests
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
+</IfModule>
+
+# Fallback for when mod_rewrite is not available
+<IfModule !mod_rewrite.c>
+    <IfModule mod_alias.c>
+        RedirectMatch 307 ^/$ /index.php/
+    </IfModule>
+</IfModule>

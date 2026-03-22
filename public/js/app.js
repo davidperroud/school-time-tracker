@@ -3,7 +3,7 @@ let translations = {};
 let currentLang = localStorage.getItem('lang') || document.documentElement.lang || 'fr';
 
 async function loadTranslations(lang) {
-    const response = await fetch(`translations.php?lang=${lang}`);
+    const response = await fetch(`${BASE_URL}translations.php?lang=${lang}`);
     translations = await response.json();
     currentLang = lang;
     localStorage.setItem('lang', lang);
@@ -94,6 +94,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     translationsLoaded = true;
     applyTranslations();
     initializeApp();
+    
+    lucide.createIcons();
+
+    // Formulaire d'ajout d'entrée
+    const entryForm = document.querySelector('.entry-form');
+    if (entryForm) {
+        entryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { success } = await submitAjaxForm(entryForm);
+            if (success) {
+                entryForm.reset();
+                entryForm.querySelector('input[name="entry_date"]').value = new Date().toISOString().split('T')[0];
+                loadRecentEntries();
+                loadDashboard();
+            }
+        });
+    }
+
+    // Formulaire d'ajout de catégorie
+    const categoryForm = document.querySelector('.category-form');
+    if (categoryForm) {
+        categoryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { success } = await submitAjaxForm(categoryForm);
+            if (success) {
+                categoryForm.reset();
+                categoryForm.querySelector('input[name="color"]').value = '#3b82f6';
+                loadManagementLists();
+            }
+        });
+    }
+
+    // Formulaire d'ajout de sujet
+    const subjectForm = document.querySelector('.subject-form');
+    if (subjectForm) {
+        subjectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { success } = await submitAjaxForm(subjectForm);
+            if (success) {
+                subjectForm.reset();
+                loadManagementLists();
+            }
+        });
+    }
 });
 
 function applyTranslations() {
@@ -115,25 +159,27 @@ async function initializeApp() {
     loadRecentEntries();
     loadManagementLists();
 
-    // Appliquer le thème sombre si déjà activé
+    const themeToggle = document.getElementById('themeToggle');
+    
     if(localStorage.getItem('theme') === 'dark') {
         document.documentElement.classList.add('dark');
-        const themeToggle = document.getElementById('themeToggle');
-        if(themeToggle) themeToggle.textContent = '☀️';
+        if(themeToggle) {
+            themeToggle.innerHTML = '<i data-lucide="sun"></i>';
+            lucide.createIcons({ nodes: [themeToggle] });
+        }
     }
 
-    // Sauvegarder le choix du thème
-    const themeToggle = document.getElementById('themeToggle');
     if(themeToggle) {
         themeToggle.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
             if(document.documentElement.classList.contains('dark')) {
                 localStorage.setItem('theme', 'dark');
-                themeToggle.textContent = '☀️';
+                themeToggle.innerHTML = '<i data-lucide="sun"></i>';
             } else {
                 localStorage.setItem('theme', 'light');
-                themeToggle.textContent = '🌙';
+                themeToggle.innerHTML = '<i data-lucide="moon"></i>';
             }
+            lucide.createIcons({ nodes: [themeToggle] });
         });
     }
 }
@@ -146,50 +192,6 @@ function changeLanguage(lang) {
     // Soumettre le formulaire pour changer la langue côté serveur
     document.getElementById('langForm').submit();
 }
-// Gestion des formulaires AJAX
-document.addEventListener('DOMContentLoaded', () => {
-    // Formulaire d'ajout d'entrée
-    const entryForm = document.querySelector('.entry-form');
-    if (entryForm) {
-        entryForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const { success } = await submitAjaxForm(entryForm);
-            if (success) {
-                entryForm.reset();
-                entryForm.querySelector('input[name="entry_date"]').value = new Date().toISOString().split('T')[0];
-                loadRecentEntries();
-                loadDashboard();
-            }
-        });
-    }
-    
-    // Formulaire d'ajout de catégorie
-    const categoryForm = document.querySelector('.category-form');
-    if (categoryForm) {
-        categoryForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const { success } = await submitAjaxForm(categoryForm);
-            if (success) {
-                categoryForm.reset();
-                categoryForm.querySelector('input[name="color"]').value = '#3b82f6';
-                loadManagementLists();
-            }
-        });
-    }
-    
-    // Formulaire d'ajout de sujet
-    const subjectForm = document.querySelector('.subject-form');
-    if (subjectForm) {
-        subjectForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const { success } = await submitAjaxForm(subjectForm);
-            if (success) {
-                subjectForm.reset();
-                loadManagementLists();
-            }
-        });
-    }
-});
 
 // Gestion des onglets
 document.querySelectorAll('.tab').forEach(tab => {
@@ -294,7 +296,7 @@ function adjustDateForPeriod() {
 // Dashboard
 async function loadDashboard() {
     try {
-        const response = await fetch('api.php?action=summary&period=day');
+        const response = await fetch(`${BASE_URL}api.php?action=summary&period=day`);
         const result = await response.json();
         
         if (result.success) {
@@ -385,21 +387,34 @@ function displayCategoryChart(summary) {
 let progressChart = null;
 async function loadProgressChart() {
     try {
-        const response = await fetch('api.php?action=summary&period=week');
+        console.log('Loading progress chart...');
+        const response = await fetch(`${BASE_URL}api.php?action=progress`);
         const result = await response.json();
+        console.log('Progress chart response:', result);
         
-        if (result.success) {
-            displayProgressChart(result.data.summary);
+        if (result.success && result.data) {
+            displayProgressChart(result.data.summary || []);
         }
     } catch (error) {
-        console.error('Erreur:', error);
+        console.error('Erreur loadProgressChart:', error);
     }
 }
 
 function displayProgressChart(summary) {
     const chartEl = document.getElementById('progressChart');
-    if (!chartEl) return;
+    if (!chartEl) {
+        console.error('progressChart element not found');
+        return;
+    }
     
+    // Si pas de données, ne pas afficher le graphique
+    if (!summary || summary.length === 0) {
+        console.log('No data for progress chart');
+        chartEl.style.display = 'none';
+        return;
+    }
+    
+    chartEl.style.display = 'block';
     const ctx = chartEl.getContext('2d');
     
     if (progressChart) {
@@ -419,6 +434,7 @@ function displayProgressChart(summary) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
             plugins: {
                 legend: { display: false },
                 title: {
@@ -446,8 +462,7 @@ function displayProgressChart(summary) {
 // Entrées récentes
 async function loadRecentEntries() {
     try {
-        const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`api.php?action=entries&date=${today}`);
+        const response = await fetch(`${BASE_URL}api.php?action=recent_entries`);
         const result = await response.json();
         
         if (result.success) {
@@ -478,20 +493,22 @@ function displayRecentEntries(entries) {
                 <form method="POST" style="display: inline;">
                     <input type="hidden" name="action" value="delete_entry">
                     <input type="hidden" name="id" value="${entry.id}">
-                    <button type="submit" class="btn-delete" onclick="return confirm('Supprimer?')">🗑️</button>
+                    <button type="submit" class="btn-delete" onclick="return confirm('Supprimer?')"><i data-lucide="trash-2"></i></button>
                 </form>
             </div>
         </div>
     `).join('');
+    
+    lucide.createIcons({ nodes: container.querySelectorAll('[data-lucide]') });
 }
 
 // Gestion
 async function loadManagementLists() {
     try {
         const [catResponse, subResponse, userResponse] = await Promise.all([
-            fetch('api.php?action=categories'),
-            fetch('api.php?action=subjects'),
-            fetch('api.php?action=users')
+            fetch(`${BASE_URL}api.php?action=categories`),
+            fetch(`${BASE_URL}api.php?action=subjects`),
+            fetch(`${BASE_URL}api.php?action=users`)
         ]);
 
         const catResult = await catResponse.json();
@@ -522,16 +539,18 @@ function displayCategories(categories) {
                 <small>${cat.subjects_count} sujet(s)</small>
             </div>
             <div class="list-item-actions">
-                <button class="btn-edit" onclick="editCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}', '${cat.color}')" title="Modifier">✏️</button>
+                <button class="btn-edit" onclick="editCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}', '${cat.color}')" title="Modifier"><i data-lucide="pencil"></i></button>
                 <form method="POST" style="display: inline;" data-ajax>
                     <input type="hidden" name="action" value="delete_category">
                     <input type="hidden" name="id" value="${cat.id}">
                     <input type="hidden" name="ajax" value="1">
-                    <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_category'))" title="${t('ui.buttons.cancel')}">🗑️</button>
+                    <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_category'))" title="${t('ui.buttons.cancel')}"><i data-lucide="trash-2"></i></button>
                 </form>
             </div>
         </div>
     `).join('');
+    
+    lucide.createIcons({ nodes: container.querySelectorAll('[data-lucide]') });
 }
 
 function displaySubjects(subjects) {
@@ -550,15 +569,17 @@ function displaySubjects(subjects) {
                 <small>${sub.total_minutes} min (${sub.entries_count} entrée(s))</small>
             </div>
             <div class="list-item-actions">
-                <button class="btn-edit" onclick="editSubject(${sub.id}, ${sub.category_id}, '${sub.name.replace(/'/g, "\\'")}', '${(sub.description || '').replace(/'/g, "\\'")}')" title="Modifier">✏️</button>
+                <button class="btn-edit" onclick="editSubject(${sub.id}, ${sub.category_id}, '${sub.name.replace(/'/g, "\\'")}', '${(sub.description || '').replace(/'/g, "\\'")}')" title="Modifier"><i data-lucide="pencil"></i></button>
                 <form method="POST" style="display: inline;">
                     <input type="hidden" name="action" value="delete_subject">
                     <input type="hidden" name="id" value="${sub.id}">
-                    <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_subject'))" title="${t('ui.buttons.cancel')}">🗑️</button>
+                    <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_subject'))" title="${t('ui.buttons.cancel')}"><i data-lucide="trash-2"></i></button>
                 </form>
             </div>
         </div>
     `).join('');
+    
+    lucide.createIcons({ nodes: container.querySelectorAll('[data-lucide]') });
 }
 
 // Rapports
@@ -577,7 +598,7 @@ async function loadReport() {
     }
 
     try {
-        const response = await fetch(`api.php?action=summary&period=${period}&date=${date}`);
+        const response = await fetch(`${BASE_URL}api.php?action=summary&period=${period}&date=${date}`);
         const result = await response.json();
 
         if (result.success) {
@@ -686,7 +707,7 @@ function exportReportPDF() {
     }
 
     // Ouvrir le PDF dans une nouvelle fenêtre/onglet
-    window.open(`export_pdf.php?${params}`, '_blank');
+    window.open(`${BASE_URL}export_pdf.php?${params}`, '_blank');
 }
 
 // Toutes les entrées
@@ -694,7 +715,7 @@ let allEntriesData = []; // Stockage des données complètes
 
 async function loadAllEntries() {
     const filterDate = document.getElementById('entriesDateFilter').value;
-    let url = 'api.php?action=all_entries';
+    let url = `${BASE_URL}api.php?action=all_entries`;
 
     if (filterDate) {
         url += `&filter_date=${filterDate}`;
@@ -749,16 +770,18 @@ function displayAllEntries(entries) {
                 </div>
                 ${entry.notes ? `<div class="entry-notes">${entry.notes}</div>` : ''}
                 <div class="entry-actions">
-                    <button class="btn-edit" onclick="editEntry(${entry.id}, ${entry.subject_id}, ${entry.duration_minutes}, '${entry.entry_date}', '${escapedNotes}')" title="Modifier">Modifier</button>
+                    <button class="btn-edit" onclick="editEntry(${entry.id}, ${entry.subject_id}, ${entry.duration_minutes}, '${entry.entry_date}', '${escapedNotes}')" title="Modifier"><i data-lucide="pencil"></i></button>
                     <form method="POST" style="display: inline;">
                         <input type="hidden" name="action" value="delete_entry">
                         <input type="hidden" name="id" value="${entry.id}">
-                        <button type="submit" class="btn-delete" onclick="return confirm('Supprimer cette entrée?')" title="Supprimer">🗑️</button>
+                        <button type="submit" class="btn-delete" onclick="return confirm('Supprimer cette entrée?')" title="Supprimer"><i data-lucide="trash-2"></i></button>
                     </form>
                 </div>
             </div>
         `;
     }).join('');
+    
+    lucide.createIcons({ nodes: container.querySelectorAll('[data-lucide]') });
 }
 
 function clearDateFilter() {
@@ -921,7 +944,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Gestion des utilisateurs (admin uniquement)
 async function loadUserList() {
     try {
-        const response = await fetch('api.php?action=users');
+        const response = await fetch(`${BASE_URL}api.php?action=users`);
         const result = await response.json();
 
         if (result.success) {
@@ -947,16 +970,18 @@ function displayUsers(users) {
                 <small>${user.language_preference} ${user.is_admin ? '(Admin)' : ''}</small>
             </div>
             <div class="list-item-actions">
-                <button class="btn-edit" onclick="editUser(${user.id}, '${user.username.replace(/'/g, "\\'")}', '${user.language_preference}', ${user.is_admin})" title="Modifier">✏️</button>
+                <button class="btn-edit" onclick="editUser(${user.id}, '${user.username.replace(/'/g, "\\'")}', '${user.language_preference}', ${user.is_admin})" title="Modifier"><i data-lucide="pencil"></i></button>
                 <form method="POST" style="display: inline;" data-ajax>
                     <input type="hidden" name="action" value="delete_user">
                     <input type="hidden" name="id" value="${user.id}">
                     <input type="hidden" name="ajax" value="1">
-                    <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_user'))" title="Supprimer">🗑️</button>
+                    <button type="submit" class="btn-delete" onclick="return confirm(t('ui.messages.delete_user'))" title="Supprimer"><i data-lucide="trash-2"></i></button>
                 </form>
             </div>
         </div>
     `).join('');
+    
+    lucide.createIcons({ nodes: container.querySelectorAll('[data-lucide]') });
 }
 
 function editUser(id, username, language, isAdmin) {

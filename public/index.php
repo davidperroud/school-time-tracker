@@ -1,14 +1,17 @@
 <?php
-require_once __DIR__ . '/../auth.php';
 require_once __DIR__ . '/../src/Database.php';
 require_once __DIR__ . '/../src/Translation.php';
 require_once __DIR__ . '/../src/Auth.php';
+
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$scriptPath = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+$baseUrl = rtrim($protocol . $host . $scriptPath, '/') . '/';
 
 $translation = new Translation();
 $db = Database::getInstance();
 $auth = new Auth();
 
-// Traitement des formulaires
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $isAjax = !empty($_POST['ajax']);
@@ -21,11 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Failed to add category']);
-                }
+                echo json_encode(['success' => $result]);
                 exit;
             }
             break;
@@ -37,11 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Failed to add subject']);
-                }
+                echo json_encode(['success' => $result]);
                 exit;
             }
             break;
@@ -53,11 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Failed to add entry']);
-                }
+                echo json_encode(['success' => $result]);
                 exit;
             }
             break;
@@ -66,11 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $db->execute("DELETE FROM categories WHERE id = ?", [$_POST['id']]);
             if ($isAjax) {
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Failed to delete category']);
-                }
+                echo json_encode(['success' => $result]);
                 exit;
             }
             break;
@@ -79,11 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $db->execute("DELETE FROM subjects WHERE id = ?", [$_POST['id']]);
             if ($isAjax) {
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Failed to delete subject']);
-                }
+                echo json_encode(['success' => $result]);
                 exit;
             }
             break;
@@ -92,11 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $db->execute("DELETE FROM time_entries WHERE id = ?", [$_POST['id']]);
             if ($isAjax) {
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Failed to delete entry']);
-                }
+                echo json_encode(['success' => $result]);
                 exit;
             }
             break;
@@ -108,11 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Failed to update category']);
-                }
+                echo json_encode(['success' => $result]);
                 exit;
             }
             break;
@@ -124,11 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Failed to update subject']);
-                }
+                echo json_encode(['success' => $result]);
                 exit;
             }
             break;
@@ -140,11 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             if ($isAjax) {
                 header('Content-Type: application/json');
-                if ($result) {
-                    echo json_encode(['success' => true]);
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Failed to update entry']);
-                }
+                echo json_encode(['success' => $result]);
                 exit;
             }
             break;
@@ -152,7 +119,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'change_language':
             $lang = $_POST['lang'] ?? 'fr';
             $auth->updateLanguagePreference($lang);
-            // Redirect to refresh the page with new language
             header('Location: ' . $_SERVER['REQUEST_URI']);
             exit;
             break;
@@ -192,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
 
         case 'delete_user':
-            if ($auth->isAdmin() && $_POST['id'] != $auth->getUserId()) { // Prevent self-deletion
+            if ($auth->isAdmin() && $_POST['id'] != $auth->getUserId()) {
                 $user = new User();
                 $result = $user->deleteUser($_POST['id']);
                 if ($result && $isAjax) {
@@ -225,7 +191,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $categories = $db->fetchAll("SELECT * FROM categories ORDER BY name");
 $subjects = $db->fetchAll("SELECT s.*, c.name as category_name FROM subjects s JOIN categories c ON s.category_id = c.id ORDER BY c.name, s.name");
 
-// Générer les années disponibles (2024 à 2030)
 $currentYear = date('Y');
 $years = [];
 for ($y = 2024; $y <= $currentYear + 5; $y++) {
@@ -238,38 +203,29 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $translation->t('ui.header.title') ?></title>
-        <link rel="stylesheet" href="css/style.css">
-        <!-- Tailwind CSS CDN -->
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script>
-            tailwind.config = {
-                darkMode: 'class',
-                theme: {
-                    extend: {
-                        colors: {
-                            primary: '#3b82f6',
-                            secondary: '#8b5cf6',
-                        }
-                    }
-                }
-            }
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="<?= $baseUrl ?>css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body>
     <div id="notificationContainer"></div>
     <div class="container">
-        <header class="flex justify-between items-center py-6">
-            <h1 class="text-4xl font-bold text-primary dark:text-secondary"><?= $translation->t('ui.header.title') ?></h1>
-            <div class="header-controls flex gap-2 items-center">
+        <header class="luxury-header">
+            <div class="header-left">
+                <h1 class="luxury-title"><?= $translation->t('ui.header.title') ?></h1>
+            </div>
+            <div class="header-controls">
                 <?php if ($auth->isAuthenticated()): ?>
-                    <span class="text-gray-700 dark:text-gray-300 mr-2"><?= htmlspecialchars($auth->getUsername()) ?></span>
+                    <div class="user-badge">
+                        <i data-lucide="user" class="user-icon"></i>
+                        <span class="user-name"><?= htmlspecialchars($auth->getUsername()) ?></span>
+                    </div>
                 <?php endif; ?>
 
                 <div class="language-selector">
                     <form method="post" id="langForm" class="inline">
                         <input type="hidden" name="action" value="change_language">
-                        <select name="lang" onchange="changeLanguage(this.value)" class="px-2 py-1 rounded border">
+                        <select name="lang" onchange="changeLanguage(this.value)">
                             <?php foreach ($translation->getAvailableLanguages() as $code => $label): ?>
                                 <option value="<?= $code ?>" <?= $translation->getLang() === $code ? 'selected' : '' ?>><?= $label ?></option>
                             <?php endforeach; ?>
@@ -277,31 +233,53 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     </form>
                 </div>
 
-                <button id="themeToggle" class="px-2 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-400 dark:border-gray-600 transition text-xl">🌙</button>
+                <button id="themeToggle" class="theme-btn" aria-label="Toggle theme">
+                    <i data-lucide="moon"></i>
+                </button>
 
                 <?php if ($auth->isAuthenticated()): ?>
-                    <a href="logout.php" class="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600 transition">
-                        <?= $translation->t('ui.auth.logout') ?>
+                    <a href="logout.php" class="luxury-btn luxury-btn-danger">
+                        <i data-lucide="log-out"></i>
+                        <span><?= $translation->t('ui.auth.logout') ?></span>
                     </a>
                 <?php else: ?>
-                    <a href="login.php" class="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600 transition">
-                        <?= $translation->t('ui.auth.login') ?>
+                    <a href="login.php" class="luxury-btn luxury-btn-primary">
+                        <i data-lucide="log-in"></i>
+                        <span><?= $translation->t('ui.auth.login') ?></span>
                     </a>
                 <?php endif; ?>
             </div>
         </header>
-        <nav class="tabs flex gap-2 mb-6 border-b-2 border-gray-300 dark:border-gray-700">
-            <button class="tab active" data-tab="dashboard"><?= $translation->t('ui.navigation.dashboard') ?></button>
-            <button class="tab" data-tab="entry"><?= $translation->t('ui.navigation.new_entry') ?></button>
-            <button class="tab" data-tab="entries"><?= $translation->t('ui.navigation.entries') ?></button>
-            <button class="tab" data-tab="manage"><?= $translation->t('ui.navigation.manage') ?></button>
-            <button class="tab" data-tab="reports"><?= $translation->t('ui.navigation.reports') ?></button>
+
+        <nav class="tabs">
+            <button class="tab active" data-tab="dashboard">
+                <i data-lucide="layout-dashboard"></i>
+                <span><?= $translation->t('ui.navigation.dashboard') ?></span>
+            </button>
+            <button class="tab" data-tab="entry">
+                <i data-lucide="plus-circle"></i>
+                <span><?= $translation->t('ui.navigation.new_entry') ?></span>
+            </button>
+            <button class="tab" data-tab="entries">
+                <i data-lucide="list"></i>
+                <span><?= $translation->t('ui.navigation.entries') ?></span>
+            </button>
+            <button class="tab" data-tab="manage">
+                <i data-lucide="settings"></i>
+                <span><?= $translation->t('ui.navigation.manage') ?></span>
+            </button>
+            <button class="tab" data-tab="reports">
+                <i data-lucide="file-bar-chart"></i>
+                <span><?= $translation->t('ui.navigation.reports') ?></span>
+            </button>
             <?php if ($auth->isAdmin()): ?>
-            <button class="tab" data-tab="admin">Admin</button>
+            <button class="tab" data-tab="admin">
+                <i data-lucide="users"></i>
+                <span>Admin</span>
+            </button>
             <?php endif; ?>
         </nav>
 
-        <!-- Dashboard -->
         <div class="tab-content active" id="dashboard">
             <div class="stats-grid" id="statsGrid"></div>
             <div class="charts-grid">
@@ -314,7 +292,6 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
             </div>
         </div>
 
-        <!-- Nouvelle entrée -->
         <div class="tab-content" id="entry">
             <div class="entry-layout">
                 <div class="entry-form-column">
@@ -332,26 +309,24 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                                 <?php endforeach; ?>
                             </select>
                         </div>
-
                         <div class="form-group">
                             <label><?= $translation->t('ui.forms.duration') ?></label>
-                            <input type="number" name="duration_minutes" min="1" required>
+                            <input type="number" name="duration_minutes" min="1" required placeholder="60">
                         </div>
-
                         <div class="form-group">
                             <label><?= $translation->t('ui.forms.date') ?></label>
                             <input type="date" name="entry_date" value="<?= date('Y-m-d') ?>" required>
                         </div>
-
                         <div class="form-group">
                             <label><?= $translation->t('ui.forms.notes') ?></label>
-                            <textarea name="notes" rows="3"></textarea>
+                            <textarea name="notes" rows="3" placeholder="<?= $translation->t('ui.placeholders.notes') ?>"></textarea>
                         </div>
-
-                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.save') ?></button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="save"></i>
+                            <?= $translation->t('ui.buttons.save') ?>
+                        </button>
                     </form>
                 </div>
-
                 <div class="entry-list-column">
                     <div class="recent-entries">
                         <h3><?= $translation->t('ui.auth.recent_entries') ?></h3>
@@ -361,7 +336,6 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
             </div>
         </div>
 
-        <!-- Toutes les entrées -->
         <div class="tab-content" id="entries">
             <div class="entries-controls">
                 <div class="filter-controls">
@@ -369,14 +343,14 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     <input type="text" id="entriesSearch" placeholder="<?= $translation->t('ui.search.placeholder') ?>" value="">
                     <label><?= $translation->t('ui.forms.date') ?></label>
                     <input type="date" id="entriesDateFilter" value="">
-                    <button onclick="clearDateFilter()" class="btn btn-secondary"><?= $translation->t('ui.buttons.all') ?></button>
+                    <button onclick="clearDateFilter()" class="btn btn-secondary">
+                        <?= $translation->t('ui.buttons.all') ?>
+                    </button>
                 </div>
             </div>
-
             <div id="allEntriesList"></div>
         </div>
 
-        <!-- Gestion -->
         <div class="tab-content" id="manage">
             <div class="management-grid">
                 <div class="form-card">
@@ -388,11 +362,13 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                             <input type="text" name="name" placeholder="<?= $translation->t('ui.forms.name') ?>" required>
                         </div>
                         <div class="form-group">
-                            <input type="color" name="color" value="#3b82f6">
+                            <input type="color" name="color" value="#0d9488">
                         </div>
-                        <button type="submit" class="btn btn-small"><?= $translation->t('ui.buttons.add') ?></button>
+                        <button type="submit" class="btn btn-small">
+                            <i data-lucide="plus"></i>
+                            <?= $translation->t('ui.buttons.add') ?>
+                        </button>
                     </form>
-
                     <div class="list" id="categoriesList"></div>
                 </div>
 
@@ -415,15 +391,16 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                         <div class="form-group">
                             <input type="text" name="description" placeholder="<?= $translation->t('ui.forms.description') ?>">
                         </div>
-                        <button type="submit" class="btn btn-small"><?= $translation->t('ui.buttons.add') ?></button>
+                        <button type="submit" class="btn btn-small">
+                            <i data-lucide="plus"></i>
+                            <?= $translation->t('ui.buttons.add') ?>
+                        </button>
                     </form>
-
                     <div class="list" id="subjectsList"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Administration -->
         <?php if ($auth->isAdmin()): ?>
         <div class="tab-content" id="admin">
             <div class="management-grid">
@@ -449,20 +426,20 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                         <div class="form-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" name="is_admin" value="1">
-                                <span class="checkmark"></span>
                                 <?= $translation->t('ui.manage.admin') ?>
                             </label>
                         </div>
-                        <button type="submit" class="btn btn-small"><?= $translation->t('ui.buttons.add') ?></button>
+                        <button type="submit" class="btn btn-small">
+                            <i data-lucide="plus"></i>
+                            <?= $translation->t('ui.buttons.add') ?>
+                        </button>
                     </form>
-
                     <div class="list" id="usersList"></div>
                 </div>
             </div>
         </div>
         <?php endif; ?>
 
-        <!-- Rapports -->
         <div class="tab-content" id="reports">
             <div class="report-controls">
                 <select id="reportPeriod">
@@ -470,14 +447,10 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     <option value="week"><?= $translation->t('ui.reports.week') ?></option>
                     <option value="month"><?= $translation->t('ui.reports.month') ?></option>
                 </select>
-
-                <!-- Contrôles pour jour et semaine -->
                 <div id="dateInputContainer">
                     <label><?= $translation->t('ui.reports.start_date') ?></label>
                     <input type="date" id="reportDate" value="<?= date('Y-m-d') ?>">
                 </div>
-
-                <!-- Contrôles pour mois (cachés par défaut) -->
                 <div id="monthInputContainer" style="display: none;">
                     <label><?= $translation->t('ui.reports.month_label') ?></label>
                     <select id="reportMonth">
@@ -492,15 +465,18 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                         <?php endforeach; ?>
                     </select>
                 </div>
-
-                <button onclick="loadReport()" class="btn btn-primary"><?= $translation->t('ui.buttons.generate') ?></button>
-                <button onclick="exportReportPDF()" class="btn btn-secondary" id="exportPdfBtn" style="display: none;"><?= $translation->t('ui.buttons.export_pdf') ?></button>
+                <button onclick="loadReport()" class="btn">
+                    <i data-lucide="refresh-cw"></i>
+                    <?= $translation->t('ui.buttons.generate') ?>
+                </button>
+                <button onclick="exportReportPDF()" class="btn btn-secondary" id="exportPdfBtn" style="display: none;">
+                    <i data-lucide="download"></i>
+                    <?= $translation->t('ui.buttons.export_pdf') ?>
+                </button>
             </div>
-
             <div id="reportContent"></div>
         </div>
 
-        <!-- Modales d'édition (déplacées en dehors des onglets pour être accessibles partout) -->
         <div id="editCategoryModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -521,7 +497,7 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     </div>
                     <div class="modal-actions">
                         <button type="button" class="btn btn-secondary modal-cancel"><?= $translation->t('ui.buttons.cancel') ?></button>
-                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.edit') ?></button>
+                        <button type="submit" class="btn"><?= $translation->t('ui.buttons.edit') ?></button>
                     </div>
                 </form>
             </div>
@@ -555,7 +531,7 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     </div>
                     <div class="modal-actions">
                         <button type="button" class="btn btn-secondary modal-cancel"><?= $translation->t('ui.buttons.cancel') ?></button>
-                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.edit') ?></button>
+                        <button type="submit" class="btn"><?= $translation->t('ui.buttons.edit') ?></button>
                     </div>
                 </form>
             </div>
@@ -596,7 +572,7 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     </div>
                     <div class="modal-actions">
                         <button type="button" class="btn btn-secondary modal-cancel"><?= $translation->t('ui.buttons.cancel') ?></button>
-                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.edit') ?></button>
+                        <button type="submit" class="btn"><?= $translation->t('ui.buttons.edit') ?></button>
                     </div>
                 </form>
             </div>
@@ -628,19 +604,25 @@ for ($y = 2024; $y <= $currentYear + 5; $y++) {
                     <div class="form-group">
                         <label class="checkbox-label">
                             <input type="checkbox" name="is_admin" id="editUserIsAdmin" value="1">
-                            <span class="checkmark"></span>
                             <?= $translation->t('ui.manage.admin') ?>
                         </label>
                     </div>
                     <div class="modal-actions">
                         <button type="button" class="btn btn-secondary modal-cancel"><?= $translation->t('ui.buttons.cancel') ?></button>
-                        <button type="submit" class="btn btn-primary"><?= $translation->t('ui.buttons.edit') ?></button>
+                        <button type="submit" class="btn"><?= $translation->t('ui.buttons.edit') ?></button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-        <script src="js/app.js"></script>
+    <footer>
+        School Time Tracker — created with love by <a href="https://davidperroud.com" target="_blank" rel="noopener">DavidPerroud.com</a>
+    </footer>
+
+    <script>
+        const BASE_URL = '<?= $baseUrl ?>';
+    </script>
+    <script src="<?= $baseUrl ?>js/app.js"></script>
 </body>
 </html>

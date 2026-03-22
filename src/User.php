@@ -157,7 +157,7 @@ class User {
             "SELECT COUNT(*) as count FROM users"
         );
 
-        return $count['count'] > 0;
+        return $count && $count['count'] > 0;
     }
 
     /**
@@ -179,7 +179,7 @@ class User {
             [$username]
         );
 
-        return $user !== null;
+        return $user !== false && $user !== null;
     }
 
     /**

@@ -4,6 +4,11 @@ require_once __DIR__ . '/../src/Translation.php';
 require_once __DIR__ . '/../src/Auth.php';
 require_once __DIR__ . '/../src/User.php';
 
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$scriptPath = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+$baseUrl = rtrim($protocol . $host . $scriptPath, '/') . '/';
+
 $translation = new Translation();
 $user = new User();
 $auth = new Auth();
@@ -12,7 +17,6 @@ $message = '';
 $messageType = '';
 $resetData = null;
 
-// Traitement du formulaire de demande de réinitialisation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reset_request') {
     $username = trim($_POST['username'] ?? '');
 
@@ -36,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Rediriger si déjà connecté
 if ($auth->isAuthenticated() ?? false) {
     header('Location: index.php');
     exit;
@@ -47,36 +50,81 @@ if ($auth->isAuthenticated() ?? false) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <?= $translation->t('ui.auth.reset.title') ?> - <?= $translation->t('ui.header.title') ?>
-    </title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3b82f6',
-                        secondary: '#8b5cf6',
-                    }
-                }
-            }
-        }
-    </script>
+    <title><?= $translation->t('ui.auth.reset.title') ?> - <?= $translation->t('ui.header.title') ?></title>
+    <link rel="stylesheet" href="<?= $baseUrl ?>css/style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-md mx-auto">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-primary dark:text-secondary mb-2">
-                    <?= $translation->t('ui.header.title') ?>
-                </h1>
-                <div class="language-selector mb-4">
-                    <form method="get" class="inline">
-                        <select name="lang" onchange="this.form.submit()" class="px-2 py-1 rounded border">
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <h1><?= $translation->t('ui.header.title') ?></h1>
+            <p class="login-subtitle"><?= $translation->t('ui.auth.reset.title') ?></p>
+
+            <?php if ($message): ?>
+                <div class="notification <?= $messageType ?> show" style="position: static; transform: none; margin-bottom: 20px;">
+                    <?= htmlspecialchars($message) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($resetData): ?>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="width: 48px; height: 48px; background: var(--accent-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <i data-lucide="check" style="color: var(--accent);"></i>
+                    </div>
+                    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;"><?= $translation->t('ui.auth.reset.success_title') ?></h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;"><?= $translation->t('ui.auth.reset.success_description') ?></p>
+                </div>
+
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; text-align: center;">
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;"><?= $translation->t('ui.auth.reset.pin_label') ?></p>
+                    <div style="font-size: 2rem; font-weight: 700; letter-spacing: 0.2em; color: var(--accent); font-family: monospace;">
+                        <?= htmlspecialchars($resetData['pin']) ?>
+                    </div>
+                </div>
+
+                <a href="reset_password.php?token=<?= urlencode($resetData['token']) ?>" class="btn btn-primary" style="display: block; text-align: center; margin-bottom: 16px;">
+                    <i data-lucide="key"></i>
+                    <?= $translation->t('ui.auth.reset.enter_new_password') ?>
+                </a>
+
+                <div class="login-links">
+                    <a href="login.php">← <?= $translation->t('ui.auth.back_to_login') ?></a>
+                </div>
+
+                <div style="margin-top: 20px; padding: 12px; background: var(--surface); border-radius: var(--radius); font-size: 0.75rem; word-break: break-all; color: var(--text-secondary);">
+                    <code>reset_password.php?token=<?= htmlspecialchars($resetData['token']) ?></code>
+                </div>
+
+            <?php else: ?>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="width: 48px; height: 48px; background: #fef3c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <i data-lucide="key" style="color: #d97706;"></i>
+                    </div>
+                    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;"><?= $translation->t('ui.auth.reset.title') ?></h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;"><?= $translation->t('ui.auth.reset.description') ?></p>
+                </div>
+
+                <form method="POST">
+                    <input type="hidden" name="action" value="reset_request">
+                    <div class="form-group">
+                        <label><?= $translation->t('ui.auth.username') ?></label>
+                        <input type="text" name="username" required autofocus placeholder="<?= $translation->t('ui.auth.username') ?>">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="send"></i>
+                        <?= $translation->t('ui.auth.reset.send_code') ?>
+                    </button>
+                </form>
+
+                <div class="login-links">
+                    <a href="login.php">← <?= $translation->t('ui.auth.back_to_login') ?></a>
+                </div>
+            <?php endif; ?>
+
+            <div style="margin-top: 24px; display: flex; justify-content: center;">
+                <div class="language-selector">
+                    <form method="get">
+                        <select name="lang" onchange="this.form.submit()">
                             <?php foreach ($translation->getAvailableLanguages() as $code => $label): ?>
                                 <option value="<?= $code ?>" <?= $translation->getLang() === $code ? 'selected' : '' ?>>
                                     <?= $label ?>
@@ -86,98 +134,17 @@ if ($auth->isAuthenticated() ?? false) {
                     </form>
                 </div>
             </div>
-
-            <?php if ($message): ?>
-                <div class="mb-4 p-4 rounded <?= $messageType === 'error' ? 'bg-red-100 text-red-700 border border-red-400' : 'bg-green-100 text-green-700 border border-green-400' ?>">
-                    <?= htmlspecialchars($message) ?>
-                </div>
-            <?php endif; ?>
-
-            <?php if ($resetData): ?>
-                <!-- Affichage du code PIN après demande réussie -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="text-center mb-6">
-                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
-                        <h2 class="text-xl font-semibold mb-2">
-                            <?= $translation->t('ui.auth.reset.success_title') ?>
-                        </h2>
-                        <p class="text-gray-600 dark:text-gray-400">
-                            <?= $translation->t('ui.auth.reset.success_description') ?>
-                        </p>
-                    </div>
-
-                    <div class="bg-blue-50 dark:bg-blue-900 rounded-lg p-4 mb-6">
-                        <p class="text-sm text-blue-800 dark:text-blue-200 mb-2">
-                            <?= $translation->t('ui.auth.reset.pin_label') ?>
-                        </p>
-                        <div class="text-3xl font-mono font-bold text-center tracking-widest text-blue-700 dark:text-blue-300">
-                            <?= htmlspecialchars($resetData['pin']) ?>
-                        </div>
-                    </div>
-
-                    <div class="text-center">
-                        <a href="reset_password.php?token=<?= urlencode($resetData['token']) ?>" class="block w-full bg-primary text-white py-3 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary mb-3">
-                            <?= $translation->t('ui.auth.reset.enter_new_password') ?>
-                        </a>
-                        <a href="login.php" class="text-primary hover:underline">
-                            ← <?= $translation->t('ui.auth.back_to_login') ?>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="text-center mt-6">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                        <?= $translation->t('ui.auth.reset.token_link_below') ?>
-                    </p>
-                    <code class="block bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs break-all">
-                        reset_password.php?token=<?= htmlspecialchars($resetData['token']) ?>
-                    </code>
-                </div>
-
-            <?php else: ?>
-                <!-- Formulaire de demande de réinitialisation -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="text-center mb-6">
-                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                            </svg>
-                        </div>
-                        <h2 class="text-xl font-semibold mb-2">
-                            <?= $translation->t('ui.auth.reset.title') ?>
-                        </h2>
-                        <p class="text-gray-600 dark:text-gray-400">
-                            <?= $translation->t('ui.auth.reset.description') ?>
-                        </p>
-                    </div>
-
-                    <form method="POST" class="space-y-4">
-                        <input type="hidden" name="action" value="reset_request">
-
-                        <div>
-                            <label class="block text-sm font-medium mb-1">
-                                <?= $translation->t('ui.auth.username') ?>
-                            </label>
-                            <input type="text" name="username" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700">
-                        </div>
-
-                        <button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary">
-                            <?= $translation->t('ui.auth.reset.send_code') ?>
-                        </button>
-                    </form>
-
-                    <div class="text-center mt-6">
-                        <a href="login.php" class="text-primary hover:underline">
-                            ← <?= $translation->t('ui.auth.back_to_login') ?>
-                        </a>
-                    </div>
-                </div>
-            <?php endif; ?>
         </div>
     </div>
+
+    <footer>
+        School Time Tracker — created with love by <a href="https://davidperroud.com" target="_blank" rel="noopener">DavidPerroud.com</a>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
 </body>
 </html>

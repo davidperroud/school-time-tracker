@@ -34,6 +34,10 @@ class ApiController {
                 return $this->getUsers();
             case 'stats':
                 return $this->getStats();
+            case 'progress':
+                return $this->getProgress();
+            case 'recent_entries':
+                return $this->getRecentEntries();
             default:
                 return $this->error($this->translation->t('ui.messages.error'));
         }
@@ -190,13 +194,57 @@ class ApiController {
         ]);
     }
 
+    private function getProgress() {
+        // Récupérer les 7 derniers jours avec données
+        $sql = "SELECT
+                    c.id,
+                    c.name as category,
+                    c.color,
+                    COALESCE(SUM(te.duration_minutes), 0) as total_minutes
+                FROM categories c
+                LEFT JOIN subjects s ON c.id = s.category_id
+                LEFT JOIN time_entries te ON s.id = te.subject_id 
+                    AND te.entry_date >= date('now', '-7 days')
+                GROUP BY c.id, c.name, c.color
+                HAVING COALESCE(SUM(te.duration_minutes), 0) > 0
+                ORDER BY total_minutes DESC";
+
+        $results = $this->db->fetchAll($sql);
+
+        return $this->success([
+            'summary' => $results
+        ]);
+    }
+
+    private function getRecentEntries() {
+        $limit = $_GET['limit'] ?? 10;
+        
+        $sql = "SELECT te.*, s.name as subject_name, c.name as category_name, c.color
+                FROM time_entries te
+                JOIN subjects s ON te.subject_id = s.id
+                JOIN categories c ON s.category_id = c.id
+                ORDER BY te.created_at DESC
+                LIMIT ?";
+
+        $results = $this->db->fetchAll($sql, [$limit]);
+
+        return $this->success($results);
+    }
+
     private function generatePDF() {
         $period = $_GET['period'] ?? 'day';
         $date = $_GET['date'] ?? date('Y-m-d');
         $month = $_GET['month'] ?? null;
         $year = $_GET['year'] ?? null;
 
-        // Récupérer les données du rapport
+        // Colors - Slate + Teal
+        $primaryColor = [13, 148, 136]; // Teal #0d9488
+        $darkColor = [15, 23, 42];      // Slate #0f172a
+        $gray100 = [248, 250, 252];     // Light gray
+        $gray200 = [226, 232, 240];      // Border gray
+        $gray500 = [100, 116, 139];      // Secondary text
+        $gray600 = [71, 85, 105];       // Muted text
+
         $dateCondition = $this->getDateCondition($period, $date, $month, $year);
 
         $sql = "SELECT
@@ -215,70 +263,87 @@ class ApiController {
         $results = $this->db->fetchAll($sql);
         $total = array_sum(array_column($results, 'total_minutes'));
 
-        // Générer le PDF
         $pdf = new \TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 
-        // Configuration du PDF
-        $pdf->SetCreator('Study Time Tracker');
-        $pdf->SetAuthor('Study Time Tracker');
+        $pdf->SetCreator('School Time Tracker');
+        $pdf->SetAuthor('School Time Tracker');
         $pdf->SetTitle($this->translation->t('pdf.title'));
-        $pdf->SetSubject('Rapport de temps d\'étude');
+        $pdf->SetSubject('Study Time Report');
 
-        // Supprimer les en-têtes et pieds de page par défaut
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
 
-        // Marges
-        $pdf->SetMargins(20, 20, 20);
-        $pdf->SetAutoPageBreak(true, 20);
+        $pdf->SetMargins(24, 24, 24);
+        $pdf->SetAutoPageBreak(true, 24);
 
-        // Ajouter une page
         $pdf->AddPage();
 
-        // Titre
-        $pdf->SetFont('helvetica', 'B', 20);
-        $pdf->Cell(0, 15, $this->translation->t('pdf.title'), 0, 1, 'C');
-        $pdf->Ln(5);
-
-        // Période
+        // Header with clean design
+        $pdf->SetFillColor($primaryColor[0], $primaryColor[1], $primaryColor[2]);
+        $pdf->Rect(0, 0, 210, 45, 'F');
+        
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->SetFont('helvetica', 'B', 22);
+        $pdf->SetY(12);
+        $pdf->Cell(0, 12, $this->translation->t('pdf.title'), 0, 1, 'C');
+        
         $pdf->SetFont('helvetica', '', 12);
+        $pdf->SetY(26);
         $periodLabel = $this->getPeriodLabel($period, $date, $month, $year);
-        $pdf->Cell(0, 10, $periodLabel, 0, 1, 'C');
-        $pdf->Ln(5);
+        $pdf->Cell(0, 8, $periodLabel, 0, 1, 'C');
+        
+        $pdf->SetFont('helvetica', '', 9);
+        $pdf->SetY(36);
+        $pdf->Cell(0, 6, $this->translation->t('pdf.generated_on') . ' ' . date('d/m/Y H:i'), 0, 1, 'C');
 
-        // Date de génération
-        $pdf->SetFont('helvetica', 'I', 10);
-        $pdf->Cell(0, 8, $this->translation->t('pdf.generated_on') . ' ' . date('d/m/Y à H:i'), 0, 1, 'R');
-        $pdf->Ln(10);
+        // Reset text color
+        $pdf->SetTextColor($darkColor[0], $darkColor[1], $darkColor[2]);
 
-        // Total général
+        $pdf->SetY(55);
+
+        // Total card
         if ($total > 0) {
             $hours = floor($total / 60);
             $minutes = $total % 60;
-            $pdf->SetFont('helvetica', 'B', 14);
-            $pdf->Cell(0, 12, $this->translation->t('pdf.total') . ' ' . $hours . 'h ' . $minutes . 'm', 0, 1, 'C');
-            $pdf->Ln(10);
+            
+            $pdf->SetFillColor($gray100[0], $gray100[1], $gray100[2]);
+            $pdf->SetDrawColor($gray200[0], $gray200[1], $gray200[2]);
+            $pdf->Rect(24, $pdf->GetY(), 162, 18, 'FD');
+            
+            $pdf->SetFont('helvetica', '', 11);
+            $pdf->SetTextColor($gray500[0], $gray500[1], $gray500[2]);
+            $pdf->SetXY(30, $pdf->GetY() + 4);
+            $pdf->Cell(60, 10, $this->translation->t('pdf.total'), 0, 0, 'L');
+            
+            $pdf->SetFont('helvetica', 'B', 18);
+            $pdf->SetTextColor($primaryColor[0], $primaryColor[1], $primaryColor[2]);
+            $pdf->SetXY(90, $pdf->GetY() + 1);
+            $pdf->Cell(90, 12, $hours . 'h ' . $minutes . 'm', 0, 1, 'R');
+            
+            $pdf->SetY($pdf->GetY() + 14);
         }
 
-        // Tableau des données
+        // Table
         if ($total > 0 && count($results) > 0) {
-            // En-têtes du tableau
-            $pdf->SetFont('helvetica', 'B', 11);
-            $pdf->SetFillColor(240, 240, 240);
+            $pdf->SetTextColor($darkColor[0], $darkColor[1], $darkColor[2]);
+            $pdf->SetFont('helvetica', 'B', 10);
+            $pdf->SetFillColor($primaryColor[0], $primaryColor[1], $primaryColor[2]);
+            $pdf->SetTextColor(255, 255, 255);
+            $pdf->SetDrawColor($primaryColor[0], $primaryColor[1], $primaryColor[2]);
 
-            // Calcul des largeurs de colonnes
-            $colWidths = [80, 25, 25, 30, 25]; // Catégorie, Sujets, Sessions, Durée, %
+            $colWidths = [65, 22, 22, 28, 25];
+            $rowHeight = 9;
 
-            // En-têtes
-            $pdf->Cell($colWidths[0], 10, $this->translation->t('pdf.category'), 1, 0, 'L', true);
-            $pdf->Cell($colWidths[1], 10, $this->translation->t('pdf.subjects'), 1, 0, 'C', true);
-            $pdf->Cell($colWidths[2], 10, $this->translation->t('pdf.sessions'), 1, 0, 'C', true);
-            $pdf->Cell($colWidths[3], 10, $this->translation->t('pdf.duration'), 1, 0, 'C', true);
-            $pdf->Cell($colWidths[4], 10, $this->translation->t('pdf.percent'), 1, 1, 'C', true);
+            $pdf->Cell($colWidths[0], $rowHeight + 2, $this->translation->t('pdf.category'), 1, 0, 'L');
+            $pdf->Cell($colWidths[1], $rowHeight + 2, $this->translation->t('pdf.subjects'), 1, 0, 'C');
+            $pdf->Cell($colWidths[2], $rowHeight + 2, $this->translation->t('pdf.sessions'), 1, 0, 'C');
+            $pdf->Cell($colWidths[3], $rowHeight + 2, $this->translation->t('pdf.duration'), 1, 0, 'C');
+            $pdf->Cell($colWidths[4], $rowHeight + 2, $this->translation->t('pdf.percent'), 1, 1, 'C');
 
-            // Données
             $pdf->SetFont('helvetica', '', 10);
-            $fill = false;
+            $pdf->SetTextColor($darkColor[0], $darkColor[1], $darkColor[2]);
+            $fill = true;
+            $fillColor = $gray100;
 
             foreach ($results as $item) {
                 if ($item['total_minutes'] > 0) {
@@ -286,26 +351,36 @@ class ApiController {
                     $minutes = $item['total_minutes'] % 60;
                     $percentage = $total > 0 ? round(($item['total_minutes'] / $total) * 100, 1) : 0;
 
-                    $pdf->Cell($colWidths[0], 8, $item['category'], 1, 0, 'L', $fill);
-                    $pdf->Cell($colWidths[1], 8, $item['subjects_count'], 1, 0, 'C', $fill);
-                    $pdf->Cell($colWidths[2], 8, $item['entries_count'], 1, 0, 'C', $fill);
-                    $pdf->Cell($colWidths[3], 8, $hours . 'h ' . $minutes . 'm', 1, 0, 'C', $fill);
-                    $pdf->Cell($colWidths[4], 8, $percentage . '%', 1, 1, 'C', $fill);
+                    if ($fill) {
+                        $pdf->SetFillColor($fillColor[0], $fillColor[1], $fillColor[2]);
+                    } else {
+                        $pdf->SetFillColor(255, 255, 255);
+                    }
+
+                    $pdf->Cell($colWidths[0], $rowHeight, $item['category'], 1, 0, 'L', true);
+                    $pdf->Cell($colWidths[1], $rowHeight, $item['subjects_count'], 1, 0, 'C', true);
+                    $pdf->Cell($colWidths[2], $rowHeight, $item['entries_count'], 1, 0, 'C', true);
+                    $pdf->Cell($colWidths[3], $rowHeight, $hours . 'h ' . $minutes . 'm', 1, 0, 'C', true);
+                    $pdf->Cell($colWidths[4], $rowHeight, $percentage . '%', 1, 1, 'C', true);
 
                     $fill = !$fill;
                 }
             }
         } else {
-            $pdf->SetFont('helvetica', 'I', 12);
-            $pdf->Cell(0, 15, $this->translation->t('pdf.no_data'), 0, 1, 'C');
+            $pdf->SetFont('helvetica', '', 12);
+            $pdf->SetTextColor($gray500[0], $gray500[1], $gray500[2]);
+            $pdf->Cell(0, 30, $this->translation->t('pdf.no_data'), 0, 1, 'C');
         }
 
-        // Pied de page
-        $pdf->Ln(20);
-        $pdf->SetFont('helvetica', 'I', 8);
+        // Footer
+        $pdf->SetY(-30);
+        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetTextColor($gray500[0], $gray500[1], $gray500[2]);
         $pdf->Cell(0, 5, $this->translation->t('pdf.auto_generated'), 0, 1, 'C');
+        $pdf->Ln(3);
+        $pdf->SetFont('helvetica', '', 8);
+        $pdf->Cell(0, 5, 'School Time Tracker — created with love by davidperroud.com', 0, 1, 'C');
 
-        // Sortie du PDF
         $filename = 'rapport_' . $period . '_' . date('Y-m-d_H-i-s') . '.pdf';
         $pdf->Output($filename, 'D');
         exit;
