@@ -1,338 +1,98 @@
 # Study Time Tracker
 
-Une application web moderne pour suivre et analyser votre temps d'étude. Développée en PHP avec une interface utilisateur élégante utilisant Tailwind CSS et Chart.js.
+A modern web application to track and analyze your study time. Built with PHP featuring an elegant user interface using Tailwind CSS and Chart.js.
 
-## ✨ Fonctionnalités
+## Features
 
-- 🌍 **Support multilingue complet** avec 4 langues (Français, Anglais, Allemand, Italien)
-- 📊 **Dashboard interactif** avec statistiques en temps réel et graphiques
-- 📝 **Suivi du temps** par sujet et catégorie
-- 📈 **Rapports détaillés** (journalier, hebdomadaire, mensuel)
-- 🏷️ **Gestion des catégories** et sujets d'étude
-- 🌙 **Thème sombre/clair** avec sauvegarde des préférences
-- 📱 **Design responsive** adapté à tous les appareils
-- 🔐 **Authentification sécurisée** par HTTP Basic Auth
-- 🗃️ **Base de données SQLite** légère et autonome
-- 📄 **Export PDF** des rapports d'étude
-- 🔄 **Modales d'édition** pour une modification en ligne
+- 🌍 **Full multi-language support** with 4 languages (French, English, German, Italian)
+- 📊 **Interactive dashboard** with real-time statistics and charts
+- 📝 **Time tracking** by subject and category
+- 📈 **Detailed reports** (daily, weekly, monthly)
+- 🏷️ **Category management** and study subjects
+- 🌙 **Dark/light theme** with preference saving
+- 📱 **Responsive design** for all devices
+- 🔐 **Secure authentication** with HTTP Basic Auth
+- 🗃️ **Lightweight SQLite database**
+- 📄 **PDF export** of study reports
+- 🔄 **Edit modals** for inline modification
 
-## 🚀 Installation
+## Requirements
 
-### Prérequis
+- **Web server** (Apache, Nginx) with PHP support
+- **PHP 7.4+** with PDO SQLite extension enabled
+- **Modern web browser** with JavaScript enabled
+- **Composer** for dependency management
 
-- **Serveur web** (Apache, Nginx) avec support PHP
-- **PHP 7.4+** avec extension PDO SQLite activée
-- **Navigateur web moderne** avec JavaScript activé
-- **Composer** pour la gestion des dépendances
+## Installation
 
-### Installation automatique (recommandée)
-
-1. **Clonez le repository :**
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/votre-nom-utilisateur/school-time-tracker.git
+   git clone https://github.com/davidperroud/school-time-tracker.git
    cd school-time-tracker
    ```
 
-2. **Installez les dépendances :**
+2. **Install dependencies:**
    ```bash
    composer install
    ```
 
-3. **Déployez sur votre serveur web :**
-   - Copiez tous les fichiers dans le répertoire web de votre serveur
-   - Assurez-vous que PHP peut écrire dans le dossier `data/`
-
-4. **Initialisez la base de données :**
-   - Accédez à `http://votre-domaine.com/public/init.php`
-   - La base de données sera créée automatiquement avec des données d'exemple
-
-5. **Accédez à l'application :**
-   - URL principale : `http://votre-domaine.com/`
-   - Interface utilisateur : `http://votre-domaine.com/public/`
-
-### Installation manuelle
-
-Si vous préférez une installation manuelle :
-
-1. **Créez la structure de dossiers :**
-   ```bash
-   mkdir -p data
-   chmod 755 data
-   ```
-
-2. **Initialisez la base de données :**
-   ```bash
-   sqlite3 data/study_tracker.db < init.sql
-   ```
-
-3. **Configurez les permissions :**
-   ```bash
-   chmod 644 data/study_tracker.db
-   ```
-
-## 🔐 Configuration de l'authentification
-
-L'application utilise l'authentification HTTP Basic. Par défaut :
-
-- **Utilisateur :** `username`
-- **Mot de passe :** `password`
-
-Pour modifier ces informations, éditez le fichier `auth.php` :
-
-```php
-$valid_username = 'votre-utilisateur';
-$valid_password = 'votre-mot-de-passe';
-```
-
-## 📖 Utilisation
-
-### Premiers pas
-
-1. **Connectez-vous** avec les identifiants configurés
-2. **Créez des catégories** (ex: Mathématiques, Sciences, Langues)
-3. **Ajoutez des sujets** dans chaque catégorie
-4. **Commencez à suivre** votre temps d'étude !
-
-### Interface principale
-
-L'application propose 5 onglets principaux :
-
-#### 🏠 Dashboard
-- Statistiques du jour (heures totales, catégories actives, sessions)
-- Graphiques en camembert et barres pour la visualisation des données
-- Vue d'ensemble de votre activité récente
-
-#### ➕ Nouvelle entrée
-- Formulaire rapide pour ajouter du temps d'étude
-- Sélection du sujet et durée en minutes
-- Ajout de notes optionnelles
-- Liste des entrées récentes
-
-#### 📋 Entrées
-- Vue complète de toutes vos entrées
-- Recherche par sujet, catégorie ou contenu des notes
-- Filtrage par date
-- Modification et suppression des entrées
-
-#### ⚙️ Gestion
-- Création et modification des catégories
-- Gestion des sujets par catégorie
-- Suppression des éléments non utilisés
-
-#### 📊 Rapports
-- Rapports journaliers, hebdomadaires ou mensuels
-- Statistiques détaillées par catégorie
-- Export PDF des rapports
-- Analyse des données d'étude
-
-## 🛠️ Architecture technique
-
-```
-school-time-tracker/
-├── .gitignore                # Fichiers à ignorer par Git
-├── auth.php                  # Authentification HTTP Basic
-├── composer.json             # Dépendances PHP
-├── composer.lock             # Verrouillage des versions
-├── index.php                 # Point d'entrée principal (redirection)
-├── init.sql                  # Script d'initialisation de la base de données
-├── README.md                 # Documentation du projet
-├── src/
-│   ├── Database.php          # Classe de gestion de la base de données
-│   └── ApiController.php     # API REST pour les données
-├── public/
-│   ├── index.php             # Interface utilisateur principale
-│   ├── api.php               # Point d'entrée de l'API
-│   ├── init.php              # Initialisation de la base de données
-│   ├── export_pdf.php        # Export PDF des rapports
-│   ├── css/
-│   │   └── style.css         # Styles CSS personnalisés
-│   └── js/
-│       └── app.js            # Logique JavaScript frontend
-└── data/
-    └── study_tracker.db      # Base de données SQLite
-```
-
-### Base de données
+3. **Deploy to your web server:**
+   - Copy all files to your web server directory
+   - Ensure PHP can write to the `data/` folder
 
-Le schéma de base de données comprend 3 tables principales :
+4. **Initialize the database:**
+   - Access `http://your-domain.com/public/init.php`
+   - The database will be created automatically with sample data
 
-- **`categories`** : Catégories d'étude (Mathématiques, Sciences, etc.)
-  - `id`, `name`, `color`, `created_at`
-- **`subjects`** : Sujets spécifiques dans chaque catégorie
-  - `id`, `category_id`, `name`, `description`, `created_at`
-- **`time_entries`** : Entrées de temps avec durée et date
-  - `id`, `subject_id`, `duration_minutes`, `entry_date`, `notes`, `created_at`
+5. **Access the application:**
+   - Main URL: `http://your-domain.com/`
+   - User interface: `http://your-domain.com/public/`
 
-### API Endpoints
+## Authentication
 
-L'application expose une API REST complète :
+The application uses HTTP Basic authentication. Default credentials:
 
-- `GET /public/api.php?action=summary&period=day|week|month[&date=YYYY-MM-DD][&month=MM][&year=YYYY]` - Résumé des données
-- `GET /public/api.php?action=categories` - Liste des catégories avec statistiques
-- `GET /public/api.php?action=subjects[&category_id=ID]` - Liste des sujets avec statistiques
-- `GET /public/api.php?action=entries[&date=YYYY-MM-DD][&subject_id=ID]` - Entrées par date/sujet
-- `GET /public/api.php?action=all_entries[&filter_date=YYYY-MM-DD]` - Toutes les entrées
-- `GET /public/api.php?action=stats&subject_id=ID[&days=30]` - Statistiques détaillées par sujet
-
-### Export PDF
-
-- `GET /public/export_pdf.php?period=day|week|month[&date=YYYY-MM-DD][&month=MM][&year=YYYY]` - Export PDF du rapport
-
-## 🎨 Personnalisation
-
-### Thème
+- **Username:** `admin`
+- **Password:** `admin123`
 
-L'application supporte nativement les thèmes sombre et clair :
-- Bascule automatique selon les préférences système
-- Sauvegarde du choix utilisateur dans le localStorage
-- Thème appliqué aux graphiques Chart.js
-
-### Styles
-
-Les styles utilisent une combinaison de :
-- **Tailwind CSS** (CDN) pour les utilitaires
-- **CSS personnalisé** pour les composants spécifiques
-- Variables CSS pour la gestion des thèmes
-
-### Couleurs
-
-Les couleurs par défaut peuvent être modifiées dans le fichier `public/index.php` :
-```javascript
-tailwind.config = {
-    darkMode: 'class',
-    theme: {
-        extend: {
-            colors: {
-                primary: '#3b82f6',
-                secondary: '#8b5cf6',
-            }
-        }
-    }
-}
-```
+To modify, edit `auth.php`.
 
-## 🔧 Développement
+## Usage
 
-### Structure du projet
+### Getting Started
 
-- **Backend PHP** : Classes orientées objet avec séparation des responsabilités
-- **Frontend** : Vanilla JavaScript avec fetch API
-- **Base de données** : SQLite avec PDO pour la sécurité
-- **UI/UX** : Design moderne et responsive
+1. **Log in** with the configured credentials
+2. **Create categories** (e.g., Mathematics, Science, Languages)
+3. **Add subjects** in each category
+4. **Start tracking** your study time!
 
-### Scripts disponibles
+### Main Interface
 
-- `public/init.php` : Initialisation de la base de données avec données d'exemple
-- `public/export_pdf.php` : Génération de rapports PDF
+The application offers 5 main tabs:
 
-### Technologies utilisées
+- **Dashboard** - Day statistics, pie/bar charts, activity overview
+- **New Entry** - Quick form to add study time
+- **Entries** - Complete view of all entries with search/filter
+- **Management** - Create and modify categories/subjects
+- **Reports** - Daily, weekly, monthly reports with PDF export
 
-- **Backend :** PHP 7.4+, SQLite, PDO
-- **Frontend :** HTML5, CSS3, JavaScript ES6+
-- **UI Framework :** Tailwind CSS
-- **Graphiques :** Chart.js
-- **Authentification :** HTTP Basic Auth
-- **Export PDF :** TCPDF
+## Multi-language Support
 
-## 🌍 Support multilingue
+The application supports **4 languages**: French, English, German, and Italian.
 
-L'application prend désormais en charge **4 langues** : Français, Anglais, Allemand et Italien.
+| Code | Language | Status |
+|------|----------|--------|
+| `fr` | French | ✓ Default |
+| `en` | English | ✓ Complete |
+| `de` | German | ✓ Complete |
+| `it` | Italian | ✓ Complete |
 
-### Fonctionnalités multilingues
+Change language using the dropdown in the header or by adding `?lang=en`, `?lang=de`, or `?lang=it` to the URL.
 
-- **Détection automatique de la langue** basée sur les préférences du navigateur
-- **Sélecteur de langue** dans l'interface utilisateur avec sauvegarde des préférences
-- **Traduction complète** de tous les éléments d'interface (boutons, formulaires, messages, etc.)
-- **Export PDF multilingue** avec rapports dans la langue sélectionnée
-- **Support des caractères spéciaux** pour toutes les langues
-- **Traduction des catégories et sujets** via la base de données
+## License
 
-### Comment changer de langue
-
-1. **Méthode recommandée** : Utilisez le menu déroulant de sélection de langue dans l'en-tête
-2. **Paramètre URL** : Ajoutez `?lang=en`, `?lang=de` ou `?lang=it` à l'URL
-3. **Détection automatique** : L'application détecte automatiquement la langue de votre navigateur
-
-### Langues supportées
-
-| Code | Langue | Nom natif | Statut |
-|------|--------|-----------|--------|
-| `fr` | Français | Français | ✓ Par défaut |
-| `en` | Anglais | English | ✓ Complète |
-| `de` | Allemand | Deutsch | ✓ Complète |
-| `it` | Italien | Italiano | ✓ Complète |
-
-### Structure des fichiers de traduction
-
-```
-lang/
-├── fr.json          # 90 chaînes de traduction en français
-├── en.json          # 90 chaînes de traduction en anglais
-├── de.json          # 90 chaînes de traduction en allemand
-└── it.json          # 90 chaînes de traduction en italien
-```
-
-### Utilisation avancée
-
-Pour les développeurs, la classe `Translation` fournit des méthodes pour :
-- `t('ui.buttons.save')` - Traduction de chaînes
-- `getLang()` - Récupération de la langue actuelle
-- `getAvailableLanguages()` - Liste des langues disponibles
-
-## 📊 Fonctionnalités avancées
-
-- **Calculs automatiques** des statistiques en temps réel
-- **Filtres dynamiques** pour la recherche d'entrées
-- **Modales d'édition** pour une modification en ligne
-- **Validation côté client** des formulaires
-- **Gestion d'erreurs** avec messages utilisateur
-- **Performance optimisée** avec index de base de données
-- **Export PDF** des rapports avec TCPDF
-- **Gestion des préférences** utilisateur (thème, etc.)
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! Pour contribuer :
-
-1. Forkez le projet
-2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/nouvelle-fonctionnalite`)
-3. Commitez vos changements (`git commit -m 'Ajout de la nouvelle fonctionnalité'`)
-4. Poussez vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
-5. Ouvrez une Pull Request
-
-### Règles de contribution
-
-- Respectez le style de code existant
-- Ajoutez des commentaires pour les fonctionnalités complexes
-- Mettez à jour la documentation si nécessaire
-- Testez vos modifications avant de soumettre
-
-## 📝 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## 🐛 Signaler un problème
-
-Si vous rencontrez un problème ou avez une suggestion :
-
-1. Vérifiez les [issues existantes](https://github.com/davidperroud/school-time-tracker/issues)
-2. Créez une nouvelle issue avec :
-   - Description détaillée du problème
-   - Étapes pour reproduire
-   - Informations sur votre environnement
-   - Captures d'écran si applicable
-
-## 🙏 Remerciements
-
-- [Tailwind CSS](https://tailwindcss.com/) pour le framework CSS
-- [Chart.js](https://www.chartjs.org/) pour les graphiques
-- [SQLite](https://www.sqlite.org/) pour la base de données
-- [TCPDF](https://tcpdf.org/) pour la génération de PDF
+MIT
 
 ---
 
-**Développé avec ❤️ pour optimiser votre temps d'étude**
-
-## 📬 Contact
-
-Pour toute question ou suggestion, vous pouvez me contacter via GitHub ou ouvrir une issue dans le repository.
+**Developed with ❤️ to optimize your study time**
